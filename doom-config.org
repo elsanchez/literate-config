@@ -2,7 +2,7 @@
 This is a literate configuration combining your `init.el`, `config.el`, `packages.el`, and `custom.el`.
 
 ** init.el
-#+BEGIN_SRC emacs-lisp :tangle ~/.doom.d/init.el
+#+BEGIN_SRC emacs-lisp :tangle ~/.config/doom/init.el
 ;;; init.el -*- lexical-binding: t; -*-
 
 ;; This file controls what Doom modules are enabled and what order they load
@@ -36,7 +36,7 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
        :ui
        ;;deft              ; notational velocity for Emacs
        doom              ; what makes DOOM look the way it does
-       doom-dashboard    ; a nifty splash screen for Emacs
+      .config/doomashboard    ; a nifty splash screen for Emacs
        ;;doom-quit         ; DOOM quit-message prompts when you quit Emacs
        ;;(emoji +unicode)  ; 🙂
        hl-todo           ; highlight TODO/FIXME/NOTE/DEPRECATED/HACK/REVIEW
@@ -200,7 +200,7 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 #+END_SRC
 
 ** config.el
-#+BEGIN_SRC emacs-lisp :tangle ~/.doom.d/config.el
+#+BEGIN_SRC emacs-lisp :tangle ~/.config/doom/config.el
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 
 ;; Place your private configuration here! Remember, you do not need to run 'doom
@@ -270,6 +270,9 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
 (setq org-directory "~/org/")
+
+;; Save buffer
+(global-set-key (kbd "M-s") #'save-buffer)
 
 (use-package! org-roam
   :init
@@ -347,7 +350,7 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 #+END_SRC
 
 ** packages.el
-#+BEGIN_SRC emacs-lisp :tangle ~/.doom.d/packages.el
+#+BEGIN_SRC emacs-lisp :tangle ~/.config/doom/packages.el
 ;; -*- no-byte-compile: t; -*-
 ;;; $DOOMDIR/packages.el
 
@@ -412,7 +415,7 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 #+END_SRC
 
 ** custom.el
-#+BEGIN_SRC emacs-lisp :tangle ~/.doom.d/custom.el
+#+BEGIN_SRC emacs-lisp :tangle ~/.config/doom/custom.el
 ;;; -*- lexical-binding: t -*-
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -433,7 +436,7 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 #+END_SRC
 
 ** lisp/log-timestamps.el
-#+BEGIN_SRC emacs-lisp :tangle ~/.doom.d/lisp/log-timestamps.el
+#+BEGIN_SRC emacs-lisp :tangle ~/.config/doom/lisp/log-timestamps.el
 ;;; log-timestamps.el --- Highlight epoch timestamps in human-readable form -*- lexical-binding: t; -*-
 
 ;;; Commentary:
