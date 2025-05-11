@@ -7,3 +7,5 @@ config.el
 packages.el
 custom.el
 .zshrc
+# Secrets
+.secrets

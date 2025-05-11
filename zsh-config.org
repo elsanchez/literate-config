@@ -6,6 +6,7 @@ This is your literate Zsh setup for KDE, Doom Emacs, and powerlevel10k.
 
 ** Global Environment
 
+#+PROPERTY: header-args :results none
 #+begin_src shell :tangle ~/.zshrc
 # Instant Prompt loading for faster startup
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
@@ -34,6 +35,11 @@ if command -v pipx > /dev/null 2>&1; then
   export PATH="$PATH:~/.local/bin"
 fi
 
+# Golang environment
+export PATH=$PATH:/usr/local/go/bin:$HOME/.config/emacs/bin/doom
+export GOPATH=$HOME/go
+export PATH=$PATH:$GOPATH/bin
+
 # Aliases
 # Navigation and general
 alias ll='ls -lh --color=auto'
@@ -52,6 +58,8 @@ alias apu='sudo apt update && sudo apt upgrade'
 alias apc='sudo apt autoremove'
 alias apf='sudo apt --fix-broken install'
 alias apsh='apt show'
+alias pbcopy="xsel --clipboard --input"
+alias yt='download_video'
 
 # General options
 setopt correct
@@ -96,20 +104,28 @@ e() {
   emacs "$@"
 }
 
-export TWITTER_USERNAME=''
-export TWITTER_PASSWORD=''
-
 download_video() {
   local url=$1
   local output_filename=$2
-  local output_dir=~/Downloads/tw
-
-  # Ensure output directory exists
+  local output_dir=~/Downloads/videos
   mkdir -p "$output_dir"
 
-  # Download the video with Twitter authentication
-  yt-dlp --username "$TWITTER_USERNAME" --password "$TWITTER_PASSWORD" "$url" -o "${output_dir}/${output_filename}.%(ext)s"
+  case "$url" in
+    ,*instagram.com*|*deviantart.com*)
+        cookies_file=~/Documents/cookies.instagram.txt
+        gallery-dl --cookies ${cookies_file} \
+                 --output "$output_dir/${output_filename}.%(extension)s" "$url"
+      ;;
+    ,*x.com*)
+        cookies_file=~/Documents/cookies.twitter.txt
+      yt-dlp --cookies ${cookies_file} -o "${output_dir}/${output_filename}.%(ext)s" "$url"
+      ;;
+    ,*)
+      yt-dlp -o "${output_dir}/${output_filename}.%(ext)s" "$url"
+      ;;
+  esac
 }
+
 #+end_src
 
 ---
@@ -121,8 +137,9 @@ download_video() {
 - File: `~/.p10k.zsh`
 - If you need to regenerate it:
 
+#+PROPERTY: header-args :results none
 #+begin_src shell
-p10k configure
+#p10k configure
 #+end_src
 
 ---
@@ -133,6 +150,7 @@ p10k configure
 - `.p10k.zsh` is handled separately to avoid manual conflicts.
 - Always reload with:
 
+#+PROPERTY: header-args :results none
 #+begin_src shell
 source ~/.zshrc
 #+end_src

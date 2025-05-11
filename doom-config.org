@@ -1,7 +1,8 @@
 * Doom Emacs Configuration
 This is a literate configuration combining your `init.el`, `config.el`, `packages.el`, and `custom.el`.
 
-** init.el
+** COMMENT init.el
+#+PROPERTY: header-args :results none
 #+BEGIN_SRC emacs-lisp :tangle ~/.config/doom/init.el
 ;;; init.el -*- lexical-binding: t; -*-
 
@@ -62,6 +63,7 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
        file-templates    ; auto-snippets for empty files
        fold              ; (nigh) universal code folding
        ;;(format +onsave)  ; automated prettiness
+       (format)  ; automated prettiness
        ;;god               ; run Emacs commands without modifier keys
        ;;lispy             ; vim for lisp, for people who don't like vim
        ;;multiple-cursors  ; editing in many places at once
@@ -200,7 +202,9 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 #+END_SRC
 
 ** config.el
+#+PROPERTY: header-args :results none
 #+BEGIN_SRC emacs-lisp :tangle ~/.config/doom/config.el
+
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 
 ;; Place your private configuration here! Remember, you do not need to run 'doom
@@ -258,15 +262,6 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
 (setq display-line-numbers-type t)
 
-(use-package! openai
-  :config
-  (setq openai-key "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"))
-
-(use-package! gptel
-  :config
-  (setq gptel-api-key "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")
-  (setq gptel-model "gpt-3.5-turbo")) ; o "gpt-3.5-turbo" si preferís
-
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
 (setq org-directory "~/org/")
@@ -276,7 +271,7 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 
 (use-package! org-roam
   :init
-  (setq org-roam-directory (file-truename "~/org-roam"))
+  (setq org-roam-directory (file-truename "~/org/roam"))
   :custom
   (org-roam-completion-everywhere t)
   :config
@@ -314,6 +309,35 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 (add-to-list 'load-path (expand-file-name "lisp" doom-user-dir))
 (require 'log-timestamps)
 
+(defun elsanchez/doom-reload-config ()
+  "Tangle config, doom sync, restart Emacs daemon, and open a new frame."
+  (interactive)
+  (let* ((doom-bin (or (executable-find "doom")
+                       (expand-file-name "~/.config/emacs/bin/doom"))) ;; fallback
+         (cmd (if (and doom-bin (file-executable-p doom-bin))
+                  (format "make && %s sync" doom-bin)
+                (user-error "Cannot find Doom binary!"))))
+    (let ((default-directory "~/org/literate-config/"))
+      (compile cmd)))
+  (when (y-or-n-p "Restart Emacs daemon and open new client?")
+    (start-process-shell-command
+     "restart-emacs-daemon" nil
+     "systemctl --user restart emacs && sleep 2 && emacsclient -c"))
+  (message "✅ Doom config updated, Emacs restarted and frame opened!"))
+
+(map! :leader
+      :desc "Recargar literate config + doom sync + restart daemon"
+      "r d" #'elsanchez/doom-reload-config)
+
+;; Opcional: asegurar que se use Zsh como shell para sh-mode
+(after! sh-script
+  (setq sh-shell "zsh"))
+
+(setq treemacs-position 'right)  ; Abre en el lado derecho
+
+(after! projectile
+  (add-hook 'projectile-after-switch-project-hook #'treemacs-add-and-display-current-project-exclusively))
+
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
@@ -349,7 +373,130 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 
 #+END_SRC
 
+#+RESULTS:
+: elsanchez/doom-reload-config
+
+*** Formatting
+**** Shell scripts
+#+PROPERTY: header-args :results none
+#+BEGIN_SRC emacs-lisp :tangle ~/.config/doom/config.el
+
+
+(use-package! apheleia
+  :config
+  (apheleia-global-mode 1)
+
+  (setf (alist-get 'shfmt apheleia-formatters)
+        '("shfmt" "-i" "2" "-ci" "-ln=zsh"))
+
+  (setf (alist-get 'sh-mode apheleia-mode-alist)
+        'shfmt)
+
+  (defun my/format-org-src-blocks-with-apheleia ()
+    "Format source blocks in Org using Apheleia."
+    (when (eq major-mode 'org-mode)
+      (org-element-map (org-element-parse-buffer) 'src-block
+        (lambda (src-block)
+          (let* ((lang (org-element-property :language src-block))
+                 (beg (org-element-property :begin src-block)))
+            (when (assoc (intern lang) apheleia-mode-alist)
+              (save-excursion
+                (goto-char beg)
+                (org-edit-special)
+                (when (apheleia--buffer-supported-p)
+                  (apheleia-format-buffer))
+                (org-edit-src-exit))))))))
+
+  (add-hook 'org-mode-hook
+            (lambda ()
+              (add-hook 'before-save-hook
+                        #'my/format-org-src-blocks-with-apheleia
+                        nil t))))
+
+(defun elsanchez/disable-apheleia-for-zshrc ()
+  (when (and buffer-file-name
+             (string-match-p "\\.zshrc\\'" buffer-file-name))
+    (apheleia-mode -1)))
+
+(defun my/org-babel-format-on-save ()
+  "Auto-indent org babel blocks on save."
+  (when (derived-mode-p 'org-mode)
+    (org-babel-map-src-blocks nil
+      (let* ((info (org-babel-get-src-block-info t))
+             (lang (nth 0 info)))
+        (when (member lang '("emacs-lisp" "sh" "bash" "zsh" "python" "elisp"))
+          (save-excursion
+            (org-babel-do-key-sequence-in-edit-buffer (kbd "C-c '"))
+            (when (fboundp 'eglot-format-buffer)
+              (eglot-format-buffer))
+            (org-edit-src-exit)))))))
+
+(add-hook 'before-save-hook #'my/org-babel-format-on-save)
+
+(add-hook 'sh-mode-hook #'elsanchez/disable-apheleia-for-zshrc)
+
+(defun my/org-babel-format-src-blocks ()
+  "Format all source blocks in the current org buffer."
+  (interactive)
+  (org-babel-map-src-blocks nil
+    (let* ((info (org-babel-get-src-block-info t))
+           (lang (nth 0 info)))
+      (when (member lang '("sh" "bash" "zsh" "emacs-lisp" "python"))
+        (let ((edit-buffer (org-edit-src-code)))
+          (with-current-buffer edit-buffer
+            (indent-region (point-min) (point-max)))
+          (org-edit-src-exit))))))
+
+(add-hook 'before-save-hook
+          (lambda ()
+            (when (derived-mode-p 'org-mode)
+              (my/org-babel-format-src-blocks))))
+
+
+#+END_SRC
+
+#+RESULTS:
+| elsanchez/disable-apheleia-for-zshrc | evil-collection-sh-script-set-evil-shift-width | rainbow-delimiters-mode | +sh-init-extra-fontification-h | +lookup--init-sh-mode-handlers-h | +electric--init-sh-mode-h | sh-electric-here-document-mode |
+
+
+*** Doom Startup Settings
+**** Doom fallback buffer and dashboard
+#+PROPERTY: header-args :results none
+#+BEGIN_SRC emacs-lisp :tangle ~/.config/doom/config.el
+;; Make Doom start in the dashboard when launching without files
+(setq doom-fallback-buffer-name "*doom*"
+      +doom-dashboard-name "*doom*"
+      +doom-dashboard-pwd-policy 'use-home)
++
+;; Make sure Emacsclient opens a clean frame properly
+(setq server-client-instructions nil) ;; No annoying message when opening new emacsclient frames
+#+END_SRC
+
+#+RESULTS:
+
+**** Clean up workspaces on startup
+#+PROPERTY: header-args :results none
+#+BEGIN_SRC emacs-lisp :tangle ~/.config/doom/config.el
+(setq treemacs-position 'right)  ; Abre en el lado derecho
+
+(after! projectile
+  (add-hook 'projectile-after-switch-project-hook #'treemacs-add-and-display-current-project-exclusively))
+
+(defun elsanchez/cleanup-workspaces-on-startup ()
+  "Delete all extra workspaces if Emacs started without files."
+  (when (and (bound-and-true-p persp-mode)
+             (= (length (persp-names)) 1) ;; Only *scratch* or *doom*
+             (get-buffer "*doom*"))
+    (+workspace/delete-other)))
+
+(add-hook 'emacs-startup-hook #'elsanchez/cleanup-workspaces-on-startup)
+#+END_SRC
+
+#+RESULTS:
+| elsanchez/cleanup-workspaces-on-startup |
+
 ** packages.el
+#+PROPERTY: header-args :results none
 #+BEGIN_SRC emacs-lisp :tangle ~/.config/doom/packages.el
 ;; -*- no-byte-compile: t; -*-
 ;;; $DOOMDIR/packages.el
@@ -357,17 +504,9 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 ;; To install a package with Doom you must declare them here and run 'doom sync'
 ;; on the command line, then restart Emacs for the changes to take effect -- or
 
-(package! openai
-  :recipe (:host github :repo "emacs-openai/openai"))
-
-(package! gptel)
 (package! ws-butler :recipe (:host github :repo "lewang/ws-butler"))
-(package! org-roam
-  :recipe (:host github :repo "org-roam/org-roam" :branch "main"))
-
-
-;;(package! hl-prop :recipe (:host github :repo "casouri/hl-prop"))
-
+(package! org-roam)
+(package! apheleia)
 ;;(package! ws-butler :disable t)
 ;; To install SOME-PACKAGE from MELPA, ELPA or emacsmirror:
 ;; (package! some-package)
@@ -415,6 +554,7 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 #+END_SRC
 
 ** custom.el
+#+PROPERTY: header-args :results none
 #+BEGIN_SRC emacs-lisp :tangle ~/.config/doom/custom.el
 ;;; -*- lexical-binding: t -*-
 (custom-set-variables
@@ -436,6 +576,7 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 #+END_SRC
 
 ** lisp/log-timestamps.el
+#+PROPERTY: header-args :results none
 #+BEGIN_SRC emacs-lisp :tangle ~/.config/doom/lisp/log-timestamps.el
 ;;; log-timestamps.el --- Highlight epoch timestamps in human-readable form -*- lexical-binding: t; -*-
 
