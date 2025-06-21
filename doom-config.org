@@ -582,6 +582,22 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 
 (--ecc-vterm-utils-enable-yank-advice)
 
+;; claude-code config
+(use-package! claude-code
+  :commands (claude-chat claude-code-region claude-code-buffer claude-code-file claude-code-fix-region)
+  :config
+  (setq claude-code-default-system-prompt
+        "You are a senior software engineer helping improve and refactor code.
+Respond only with code or clear suggestions. Avoid vague or generic replies."))
+
+(map! :leader
+      (:prefix ("a" . "AI / Claude")
+       :desc "Claude: chat in popup" "c" #'claude-chat
+       :desc "Claude: ask region"   "r" #'claude-code-region
+       :desc "Claude: ask buffer"   "b" #'claude-code-buffer
+       :desc "Claude: ask file"     "f" #'claude-code-file
+       :desc "Claude: fix region"   "F" #'claude-code-fix-region))
+
 ;; Font & flicker fixes
 (set-fontset-font t 'unicode (font-spec :family "JuliaMono"))
 (add-hook 'claude-code-start-hook
