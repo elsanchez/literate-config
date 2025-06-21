@@ -1,0 +1,107 @@
+#+title: Scripts
+
+* Scripts
+** focus_or_launch.sh
+#+PROPERTY: header-args :results none
+#+BEGIN_SRC bash :tangle ~/.local/bin/focus_or_launch.sh :shebang "#!/bin/bash"
+# Requirements: wmctrl, xdotool
+# Usage:
+#   ./focus_or_launch.sh emacs
+#   ./focus_or_launch.sh konsole
+#   ./focus_or_launch.sh firefox
+
+TARGET="$1"
+
+if [ -z "$TARGET" ]; then
+  echo "Usage: $0 {emacs|konsole|firefox}"
+  exit 1
+fi
+
+focus_window() {
+  local window_class="$1"
+  echo "🔎 Trying to focus window class: $window_class..."
+  wmctrl -x -a "$window_class" || xdotool search --class "$window_class" windowactivate
+}
+
+wait_for_window() {
+  local window_class="$1"
+  echo "⏳ Waiting for window class: $window_class..."
+  for i in {1..10}; do
+    if wmctrl -lx | grep -i "$window_class" >/dev/null; then
+      echo "✅ Window class $window_class found!"
+      return
+    fi
+    sleep 0.5
+  done
+  echo "⚠️ Warning: Window class $window_class not found after 5 seconds."
+}
+
+case "$TARGET" in
+  emacs)
+    TARGET_CLASS="Emacs"
+
+    if ! pgrep -x emacs >/dev/null; then
+      echo "🟢 Emacs is not running. Starting Emacs as a daemon..."
+      emacs --daemon
+      sleep 1
+    fi
+
+    if wmctrl -lx | awk '{print $3}' | grep -iFxq "Emacs.Emacs"; then
+      echo "🧠 Emacs window detected. Focusing it..."
+      focus_window "$TARGET_CLASS"
+    else
+      echo "🚀 No Emacs window found. Opening a new one..."
+      emacsclient -c -a ""
+      wait_for_window "$TARGET_CLASS"
+      focus_window "$TARGET_CLASS"
+    fi
+    ;;
+
+  konsole)
+    TARGET_CLASS="konsole.konsole"
+
+    if ! pgrep -x konsole >/dev/null; then
+      echo "🟢 Konsole is not running. Starting Konsole..."
+      konsole &
+      sleep 1
+    fi
+
+    if wmctrl -lx | grep -i "$TARGET_CLASS"; then
+      echo "🧠 Konsole window detected. Focusing it..."
+      focus_window "$TARGET_CLASS"
+    else
+      echo "🚀 No Konsole window found. Trying to open it again..."
+      konsole &
+      wait_for_window "$TARGET_CLASS"
+      focus_window "$TARGET_CLASS"
+    fi
+    ;;
+
+  firefox)
+    TARGET_CLASS="Navigator.Firefox"
+
+    if ! pgrep -x firefox >/dev/null; then
+      echo "🟢 Firefox is not running. Starting Firefox..."
+      firefox &
+      sleep 1
+    fi
+
+    if wmctrl -lx | grep -i "$TARGET_CLASS"; then
+      echo "🧠 Firefox window detected. Focusing it..."
+      focus_window "$TARGET_CLASS"
+    else
+      echo "🚀 No Firefox window found. Trying to open it again..."
+      firefox &
+      wait_for_window "$TARGET_CLASS"
+      focus_window "$TARGET_CLASS"
+    fi
+    ;;
+
+  ,*)
+    echo "❌ Unsupported target: $TARGET"
+    echo "Usage: $0 {emacs|konsole|firefox}"
+    exit 2
+    ;;
+esac
+
+#+END_SRC

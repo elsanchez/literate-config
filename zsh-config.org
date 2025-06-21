@@ -75,16 +75,6 @@ setopt extended_glob
 # Completion system
 autoload -Uz compinit && compinit
 
-# FZF configuration if installed
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-
-# SSH-Agent with Keychain
-if [ -x /usr/bin/keychain ]; then
-  eval $(keychain --quiet --eval id_rsa)
-fi
-
-# Custom Functions
-
 # Create a directory and move into it
 mkcd() {
   mkdir -p "$1" && cd "$1"

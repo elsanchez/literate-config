@@ -319,7 +319,10 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 (setq treemacs-position 'right)  ; Abre en el lado derecho
 
 (after! projectile
-  (add-hook 'projectile-after-switch-project-hook #'treemacs-add-and-display-current-project-exclusively))
+  (add-hook 'projectile-after-switch-project-hook 
+            (lambda ()
+              (treemacs-add-and-display-current-project-exclusively)
+              (other-window 1))))
 (defun elsanchez/doom-reload-config ()
   "Tangle config, doom sync, then restart the Emacs daemon and open a new GUI frame."
   (interactive)
@@ -482,7 +485,10 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 (setq treemacs-position 'right)  ; Abre en el lado derecho
 
 (after! projectile
-  (add-hook 'projectile-after-switch-project-hook #'treemacs-add-and-display-current-project-exclusively))
+  (add-hook 'projectile-after-switch-project-hook 
+            (lambda ()
+              (treemacs-add-and-display-current-project-exclusively)
+              (other-window 1))))
 
 (defun elsanchez/cleanup-workspaces-on-startup ()
   "Delete all extra workspaces if Emacs started without files."
@@ -498,52 +504,102 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
   (setq lsp-disabled-clients '(pyls))
   (add-hook 'python-mode-hook #'lsp!))
 
-
 ;; ~/.doom.d/config.el
-(use-package! emacs-claude-code
-  :after vterm
-  :config
-  ;; Función para obtener API key de Secret Service
-  (defun my/get-anthropic-api-key-from-secret-service ()
-    "Get Anthropic API key from Secret Service (no password prompt)."
-    (when (executable-find "secret-tool")
-      (let ((key (shell-command-to-string 
-                  "secret-tool lookup service anthropic account claude 2>/dev/null")))
-        (when (and key (not (string-empty-p key)))
-          (string-trim key)))))
-  
-  ;; Configurar variable de entorno automáticamente
-  (when-let ((api-key (my/get-anthropic-api-key-from-secret-service)))
-    (setenv "ANTHROPIC_API_KEY" api-key)
-    (message "✓ API key cargada desde Secret Service"))
-  
-  ;; Configuración de auto-respuestas
-  (setq ecc-auto-response-responses 
-        '((:y/n . "1")                    ; Responde "1" a Y/N
-          (:y/y/n . "2")                  ; Responde "2" a Y/Y/N  
-          (:waiting . "/user:auto")       ; Comando auto cuando espera
-          (:initial-waiting . "/user/understand-guidelines"))) ; Comando inicial
-  
-  ;; Configuraciones adicionales
-  (setq ecc-auto-refresh-enabled t        ; Auto-refresh de buffers
-        ecc-auto-refresh-interval 2.0     ; Cada 2 segundos
-        ecc-notification-enabled t)       ; Notificaciones de escritorio
-  
-  ;; Keybindings organizados bajo SPC c c
-  (map! :leader
-        (:prefix ("c c" . "claude-code")
-         :desc "List Claude buffers"    "l" #'ecc-list-buffers
-         :desc "Toggle auto-response"   "a" #'ecc-auto-toggle
-         :desc "Switch host/machine"    "h" #'ecc-switch-host
-         :desc "Toggle notifications"   "n" #'ecc-notification-toggle
-         :desc "Toggle debug mode"      "d" #'ecc-debug-toggle
-         :desc "Refresh buffer list"    "r" #'ecc-refresh-list))
-  
-  ;; Hook opcional para mostrar estado al iniciar
-  (add-hook 'emacs-startup-hook
-            (lambda ()
-              (when (my/get-anthropic-api-key-from-secret-service)
-                (message "🤖 Claude Code configurado correctamente")))))
+;; Configure emacs-claude-code after loading vterm
+(after! vterm
+  ;; Try to load the package with error handling
+  (condition-case err
+      (progn
+        (require 'emacs-claude-code nil t)  ; Try to load main file
+
+        ;; If that doesn't work, try other possible names
+        (unless (featurep 'emacs-claude-code)
+          (or (require 'ecc nil t)
+              (require 'claude-code nil t)
+              (require 'claude nil t)))
+
+        ;; Configuration only if loaded correctly
+        (when (or (featurep 'emacs-claude-code)
+                  (featurep 'ecc)
+                  (featurep 'claude-code)
+                  (featurep 'claude))
+
+          ;; Configure API key
+          (when-let ((api-key (my/get-anthropic-api-key-from-secret-service)))
+            (setenv "ANTHROPIC_API_KEY" api-key)
+            (message "✓ API key loaded from Secret Service"))
+
+          ;; Configurations if variables exist
+          (when (boundp 'ecc-auto-response-responses)
+            (setq ecc-auto-response-responses
+                  '((:y/n . "1")                    ; Respond "1" to Y/N
+                    (:y/y/n . "2")                  ; Respond "2" to Y/Y/N
+                    (:waiting . "/user:auto")       ; Auto command when waiting
+                    (:initial-waiting . "/user/understand-guidelines")))) ; Initial command
+
+          (when (boundp 'ecc-auto-refresh-enabled)
+            (setq ecc-auto-refresh-enabled t        ; Auto-refresh buffers
+                  ecc-auto-refresh-interval 2.0     ; Every 2 seconds
+                  ecc-notification-enabled t))      ; Desktop notifications
+
+          ;; Keybindings only if functions exist
+          (map! :leader
+                (:prefix ("c c" . "claude-code")
+                 :desc "List Claude buffers"    "l" (if (fboundp 'ecc-list-buffers)
+                                                        #'ecc-list-buffers
+                                                      (lambda () (interactive) (message "ecc-list-buffers not available")))
+                 :desc "Toggle auto-response"   "a" (if (fboundp 'ecc-auto-toggle)
+                                                        #'ecc-auto-toggle
+                                                      (lambda () (interactive) (message "ecc-auto-toggle not available")))
+                 :desc "Switch host/machine"    "h" (if (fboundp 'ecc-switch-host)
+                                                        #'ecc-switch-host
+                                                      (lambda () (interactive) (message "ecc-switch-host not available")))
+                 :desc "Toggle notifications"   "n" (if (fboundp 'ecc-notification-toggle)
+                                                        #'ecc-notification-toggle
+                                                      (lambda () (interactive) (message "ecc-notification-toggle not available")))
+                 :desc "Toggle debug mode"      "d" (if (fboundp 'ecc-debug-toggle)
+                                                        #'ecc-debug-toggle
+                                                      (lambda () (interactive) (message "ecc-debug-toggle not available")))))
+
+          (message "✅ emacs-claude-code configured successfully")))
+
+    (error
+     (message "⚠️  Error loading emacs-claude-code: %s" (error-message-string err))
+     (message "💡 You can use Claude Code directly from terminal with 'claude'"))))
+
+(setq --ecc-auto-response-responses
+      '((:y/n . "1")
+        (:y/y/n . "2")
+        (:waiting . "/user:auto")
+        (:initial-waiting . "/user:understand-guidelines")))
+
+(ecc-auto-periodical-toggle)
+
+(setq --ecc-auto-response-periodic-interval 300
+      ecc-auto-periodical-commands
+      '((10 . "/compact")
+        (20 . "/user:auto")))
+
+(--ecc-vterm-utils-enable-yank-advice)
+
+;; Font & flicker fixes
+(set-fontset-font t 'unicode (font-spec :family "JuliaMono"))
+(add-hook 'claude-code-start-hook
+          (lambda ()
+            (setq-local eat-minimum-latency 0.033
+                        eat-maximum-latency 0.1)))
+
+;; Optional notification channel
+(shell-command "claude config set --global preferredNotifChannel terminal_bell")
+
+;; Function to get API key from Secret Service
+(defun my/get-anthropic-api-key-from-secret-service ()
+  "Get Anthropic API key from Secret Service (no password prompt)."
+  (when (executable-find "secret-tool")
+    (let ((key (shell-command-to-string
+                "secret-tool lookup service anthropic account claude 2>/dev/null")))
+      (when (and key (not (string-empty-p key)))
+        (string-trim key)))))
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
@@ -600,7 +656,10 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 (setq treemacs-position 'right)  ; Abre en el lado derecho
 
 (after! projectile
-  (add-hook 'projectile-after-switch-project-hook #'treemacs-add-and-display-current-project-exclusively))
+  (add-hook 'projectile-after-switch-project-hook 
+            (lambda ()
+              (treemacs-add-and-display-current-project-exclusively)
+              (other-window 1))))
 
 (defun elsanchez/cleanup-workspaces-on-startup ()
   "Delete all extra workspaces if Emacs started without files."
@@ -625,6 +684,10 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 (package! ws-butler :recipe (:host github :repo "lewang/ws-butler"))
 (package! org-roam)
 (package! apheleia)
+
+;;claude-code
+(package! claude-code
+  :recipe (:host github :repo "stevemolitor/claude-code.el"))
 
 ;; emacs-claude-code
 (package! emacs-claude-code
