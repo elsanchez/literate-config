@@ -38,6 +38,69 @@ This configuration provides comprehensive window management capabilities across 
 | `SPC w u` | Undo window config | Restore previous layout |
 | `SPC w U` | Redo window config | Re-apply window change |
 
+### Interactive Window Resize (Transient Menu)
+
+The configuration includes a powerful **transient menu** for interactive window management accessible via `SPC w r`. This provides a persistent interface for window operations.
+
+#### Activation
+- **Keybinding**: `SPC w r`
+- **Function**: `elsanchez/window-resize-transient`
+- **Type**: Persistent transient menu (stays open until manually closed)
+
+#### Available Operations
+
+##### 🔧 Resize Operations
+| Key | Action | Description |
+|-----|--------|-------------|
+| `h` | Decrease width | Make window narrower (←) |
+| `j` | Increase height | Make window taller (↓) |
+| `k` | Decrease height | Make window shorter (↑) |
+| `l` | Increase width | Make window wider (→) |
+
+##### 📦 Move Window Operations  
+| Key | Action | Description |
+|-----|--------|-------------|
+| `H` | Move far left | Move window to leftmost position |
+| `J` | Move very bottom | Move window to bottom position |
+| `K` | Move very top | Move window to top position |
+| `L` | Move far right | Move window to rightmost position |
+
+##### ✂️ Split & Manage Operations
+| Key | Action | Description |
+|-----|--------|-------------|
+| `s` | Split below | Create horizontal split below |
+| `v` | Split right | Create vertical split to the right |
+| `d` | Delete window | Close current window |
+| `o` | Delete others | Close all other windows |
+| `=` | Balance windows | Make all windows equal size |
+
+##### 🧭 Navigate Operations
+| Key | Action | Description |
+|-----|--------|-------------|
+| `w` | Next window | Switch to next window |
+| `W` | Previous window | Switch to previous window |
+
+##### 🚪 Exit Operations
+| Key | Action | Description |
+|-----|--------|-------------|
+| `q` | Quit | Exit transient menu |
+| `<escape>` | Quit | Exit transient menu |
+
+#### Usage Example
+
+1. **Open the menu**: `SPC w r`
+2. **Resize repeatedly**: Press `h`, `h`, `h` to make window narrower multiple times
+3. **Switch operations**: Press `j`, `j` to make it taller, then `=` to balance
+4. **Exit when done**: Press `q` or `<escape>`
+
+#### Benefits
+
+- **Persistent Interface**: Menu stays open for multiple operations
+- **Visual Feedback**: Shows all available operations at once  
+- **Vim-like Navigation**: Uses familiar `hjkl` keys for resize
+- **No Memorization**: All commands visible in the interface
+- **Efficient Workflow**: Perfect for fine-tuning window layouts
+
 ### Workspace Management
 
 | Keybinding | Action | Description |
