@@ -1,0 +1,227 @@
+# 🎯 Literate Config - Keybindings & Commands Cheatsheet
+
+## 📋 **Doom Emacs Keybindings**
+
+### **🔄 Configuration Reload & Testing**
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `SPC r d` | `elsanchez/doom-reload-config` | **Interactive config reload** (test/stage/direct/cancel) |
+| `SPC r t t` | `elsanchez/test-doom-config` | Test config in isolated environment |
+| `SPC r t s` | `elsanchez/stage-doom-config` | Stage config for manual testing |
+| `SPC r t r` | `elsanchez/rollback-doom-config` | Rollback to previous configuration |
+| `SPC r t l` | `elsanchez/list-config-backups` | List available configuration backups |
+| `SPC r t d` | `elsanchez/doom-reload-direct` | Direct reload without testing options |
+
+### **🔧 Emacs Daemon Management**
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `SPC r e r` | `elsanchez/restart-emacs-daemon` | **Smart restart daemon** (interactive options) |
+| `SPC r e a` | `elsanchez/auto-restart-daemon` | Auto restart daemon (systemd detection) |
+| `SPC r e d` | `elsanchez/restart-daemon-only` | Restart daemon only (no frame) |
+| `SPC r e f` | `elsanchez/open-new-frame` | Open new Emacs frame |
+
+### **🤖 Claude Code Integration**
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `SPC a c` | `claude-chat` | Claude chat in popup |
+| `SPC a r` | `claude-code-region` | Ask Claude about selected region |
+| `SPC a b` | `claude-code-buffer` | Ask Claude about current buffer |
+| `SPC a f` | `claude-code-file` | Ask Claude about a file |
+| `SPC a F` | `claude-code-fix-region` | Fix selected region with Claude |
+
+---
+
+## 🐚 **Zsh Commands & Functions**
+
+### **📦 Configuration Management**
+| Command | Description | Usage Example |
+|---------|-------------|---------------|
+| `config-backup` | Create timestamped configuration backup | `config-backup` |
+| `config-restore` | Interactive backup restoration (with fzf) | `config-restore` |
+| `config-list-backups` | List available configuration backups | `config-list-backups` |
+
+### **🔗 Dotfiles Management (Enhanced)**
+| Command | Description | Usage Example |
+|---------|-------------|---------------|
+| `config-init-dotfiles` | **Initialize dotfiles repo with symlinks** | `config-init-dotfiles` |
+| `config-create-symlinks` | Create symbolic links to dotfiles repo | `config-create-symlinks` |
+| `config-sync-to-dotfiles` | Sync generated configs to dotfiles repo | `config-sync-to-dotfiles` |
+| `config-status` | **Check dotfiles and symlink status** | `config-status` |
+| `config-enhanced-reload` | Enhanced reload with dotfiles integration | `config-enhanced-reload` |
+
+### **🧪 Doom Testing & Staging**
+| Command | Description | Usage Example |
+|---------|-------------|---------------|
+| `doom-test-config` | **Test config in isolated environment** | `doom-test-config` |
+| `doom-stage-config` | Stage config for manual testing | `doom-stage-config` |
+| `doom-rollback` | Rollback to previous Doom configuration | `doom-rollback` |
+| `doom-list-backups` | List available Doom configuration backups | `doom-list-backups` |
+
+### **🔄 Emacs Daemon Management (Terminal)**
+| Command | Description | Usage Example |
+|---------|-------------|---------------|
+| `emacs-restart` | **Smart restart with auto-detection** | `emacs-restart` |
+| `emacs-status` | Check daemon status (service + process + client) | `emacs-status` |
+| `emacs-frame` | Open new Emacs frame | `emacs-frame` |
+| `emacs-kill` | Stop daemon gracefully | `emacs-kill` |
+
+### **✅ Validation Functions**
+| Command | Description | Usage Example |
+|---------|-------------|---------------|
+| `validate-zsh-config` | Validate zsh configuration syntax | `validate-zsh-config` |
+| `validate-doom-config` | Validate Doom configuration with `doom doctor` | `validate-doom-config` |
+| `validate-elisp-syntax` | Validate Emacs Lisp file syntax | `validate-elisp-syntax ~/.config/doom/config.el` |
+
+### **🔧 Dependency Management**
+| Command | Description | Usage Example |
+|---------|-------------|---------------|
+| `check-dependencies` | Check for missing system dependencies | `check-dependencies` |
+| `install-dependencies` | **Auto-install missing dependencies** | `install-dependencies` |
+| `setup-literate-config` | **Complete environment setup** | `setup-literate-config` |
+
+### **📱 Tmux Utilities**
+| Command | Description | Usage Example |
+|---------|-------------|---------------|
+| `tms` | **Select tmux session with fzf** | `tms` |
+| `tmgo [session]` | Create or attach to tmux session | `tmgo work` or `tmgo` (default) |
+| `tmkill` | **Kill tmux session with fzf** | `tmkill` |
+
+### **📁 File & Navigation Utilities**
+| Command | Description | Usage Example |
+|---------|-------------|---------------|
+| `mkcd <dir>` | Create directory and cd into it | `mkcd ~/projects/new-project` |
+| `up <n>` | Navigate up N directories | `up 3` |
+| `e <file>` | Open file with Emacs in terminal | `e config.el` |
+| `open <path>` | Open path with Dolphin file manager | `open .` |
+
+### **📹 Media Download**
+| Command | Description | Usage Example |
+|---------|-------------|---------------|
+| `download_video <url> [filename]` | **Smart video downloader** (yt-dlp/gallery-dl) | `download_video "https://youtube.com/watch?v=..." "video"` |
+| `yt <url> [filename]` | Alias for download_video | `yt "https://x.com/..." "tweet"` |
+
+### **🔧 System Utilities**
+| Command | Description | Usage Example |
+|---------|-------------|---------------|
+| `please <command>` | Alias for sudo | `please apt update` |
+| `reload!` | Reload zsh configuration | `reload!` |
+| `restart-audio` | Restart audio system (pipewire/pulseaudio) | `restart-audio` |
+
+### **📦 APT Package Management (Short Aliases)**
+| Alias | Full Command | Description |
+|-------|--------------|-------------|
+| `api` | `sudo apt install` | Install package |
+| `apr` | `sudo apt remove` | Remove package |
+| `app` | `sudo apt purge` | Purge package completely |
+| `aps` | `apt search` | Search packages |
+| `apu` | `sudo apt update && sudo apt upgrade` | **Update and upgrade** |
+| `apc` | `sudo apt autoremove` | Clean unused packages |
+| `apf` | `sudo apt --fix-broken install` | Fix broken packages |
+| `apsh` | `apt show` | Show package information |
+
+---
+
+## 🚀 **Interactive Workflows**
+
+### **🧪 Safe Configuration Testing Workflow**
+```bash
+# 1. Edit doom-config.org
+# 2. Test safely:
+SPC r d → [t]           # Test in isolation first
+# If tests pass:
+SPC r d → [d] → [a]     # Direct deployment + auto restart
+
+# From terminal:
+doom-test-config        # Test first
+emacs-restart          # Smart restart if tests pass
+```
+
+### **🎭 Staging Workflow for Manual Testing**
+```bash
+# 1. Edit doom-config.org  
+# 2. Stage for testing:
+SPC r d → [s]           # Stage configuration
+# Test manually in Emacs
+# If satisfied: keep changes
+# If not:
+doom-rollback          # Rollback quickly
+```
+
+### **⚡ Emergency Recovery**
+```bash
+# If Emacs won't start:
+doom-rollback          # Quick rollback
+emacs-status          # Check daemon status
+emacs-restart         # Restart daemon
+
+# If complete failure:
+config-restore        # Restore from git backups
+setup-literate-config # Nuclear option: complete reset
+```
+
+---
+
+## 📊 **Menu Options Reference**
+
+### **SPC r d (Main Reload Menu)**
+- **`[t]`** - Test first (safest option)
+- **`[s]`** - Stage for testing  
+- **`[d]`** - Direct reload
+- **`[c]`** - Cancel
+
+### **SPC r e r (Daemon Restart Menu)**
+- **`[a]`** - Auto restart (recommended)
+- **`[m]`** - Manual restart
+- **`[r]`** - Reload only (no restart)
+- **`[s]`** - Skip restart
+
+### **emacs-restart-alternative (Terminal Menu)**
+- **`1`** - Kill and restart daemon
+- **`2`** - Client-based restart
+- **`3`** - Manual instructions
+
+---
+
+## 🏗️ **Build Commands**
+
+### **Make Commands**
+| Command | Description |
+|---------|-------------|
+| `make` | **Tangle all .org files** |
+| `make scripts` | Tangle only scripts |
+| `make clean` | Clean generated files |
+
+### **Doom Commands**
+| Command | Description |
+|---------|-------------|
+| `doom sync` | Sync Doom configuration |
+| `doom doctor` | Check configuration health |
+| `doom upgrade` | Upgrade Doom Emacs |
+
+---
+
+## 💡 **Pro Tips**
+
+### **🎯 Most Used Commands**
+1. **`SPC r d → [t]`** - Always test before deploying
+2. **`emacs-restart`** - Smart daemon restart from terminal
+3. **`check-dependencies`** - Verify environment health
+4. **`config-backup`** - Manual backup before major changes
+5. **`tms`** - Quick tmux session switching
+
+### **🛡️ Safety First**
+- Always use **`[t]`** (test) option for config changes
+- Run **`check-dependencies`** when setting up new environment
+- Use **`doom-rollback`** or **`config-restore`** for quick recovery
+- Monitor with **`emacs-status`** and **`systemctl --user status emacs.service`**
+
+### **⚡ Speed Tips**
+- Use **`setup-literate-config`** for new machine setup
+- **`install-dependencies`** handles all missing tools automatically
+- **`apu`** for quick system updates
+- **`tms`** and **`tmgo`** for efficient tmux workflow
+
+---
+
+*Generated for Literate Configuration System v2.0*  
+*For issues or improvements, edit the .org files and run the enhanced reload system*
