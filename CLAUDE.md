@@ -342,4 +342,5 @@ For quick lookup during development, refer to these files or keep the cheat card
 
 ### Project-Specific Memories
 
-- Asegurate de que siempre se sincronicen los repositorios (git push) tanto origin como gitlab del proyecto
+- ✅ **Multi-repository push configured**: `git push` now syncs to both GitHub and GitLab automatically
+- Individual remotes still available: `git push origin` (both repos) or `git push gitlab` (GitLab only)
