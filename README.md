@@ -64,11 +64,18 @@ Once configured, use these keybindings for AI assistance:
 
 ## 📚 Documentation
 
-For detailed information about keybindings, commands, and workflows:
-- **[KEYBINDINGS_CHEATSHEET.md](./KEYBINDINGS_CHEATSHEET.md)** - Complete keybindings reference
-- **[CHEAT_CARD.md](./CHEAT_CARD.md)** - Printable quick reference
-- **[CLAUDE.md](./CLAUDE.md)** - Comprehensive configuration guide
-- **[QUICK_REFERENCE.md](./QUICK_REFERENCE.md)** - Essential commands
+### Setup & Configuration
+- **[CLAUDE.md](./docs/setup/CLAUDE.md)** - Comprehensive configuration guide and AI integration setup
+- **[PROJECT_STATE.md](./docs/setup/PROJECT_STATE.md)** - Current project status and development notes
+- **[CONTINUATION_PROMPT.md](./docs/setup/CONTINUATION_PROMPT.md)** - AI assistant continuation prompts
+
+### Reference Materials
+- **[KEYBINDINGS_CHEATSHEET.md](./docs/reference/KEYBINDINGS_CHEATSHEET.md)** - Complete keybindings reference
+- **[CHEAT_CARD.md](./docs/reference/CHEAT_CARD.md)** - Printable quick reference card
+- **[QUICK_REFERENCE.md](./docs/reference/QUICK_REFERENCE.md)** - Essential daily commands
+
+### Guides & Tutorials
+- **[WINDOW_MANAGEMENT.md](./docs/guides/WINDOW_MANAGEMENT.md)** - Comprehensive window management across Emacs, Tmux, and desktop environments
 
 ## License
 

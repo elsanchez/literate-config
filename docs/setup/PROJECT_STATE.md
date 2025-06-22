@@ -27,11 +27,11 @@
 ## 📁 **Files Created/Modified**
 
 ### **📝 New Files Created**
-1. **`CLAUDE.md`** - Comprehensive system documentation and guide
-2. **`KEYBINDINGS_CHEATSHEET.md`** - Complete keybindings and commands reference
-3. **`QUICK_REFERENCE.md`** - Essential commands for daily development
-4. **`CHEAT_CARD.md`** - Printable ASCII cheat card format
-5. **`PROJECT_STATE.md`** - This current project state document
+1. **`docs/setup/CLAUDE.md`** - Comprehensive system documentation and guide
+2. **`docs/reference/KEYBINDINGS_CHEATSHEET.md`** - Complete keybindings and commands reference
+3. **`docs/reference/QUICK_REFERENCE.md`** - Essential commands for daily development
+4. **`docs/reference/CHEAT_CARD.md`** - Printable ASCII cheat card format
+5. **`docs/setup/PROJECT_STATE.md`** - This current project state document
 
 ### **🔧 Modified Files**
 1. **`zsh-config.org`** - Major enhancements:
@@ -133,7 +133,17 @@ setup-literate-config      # Complete environment setup
 literate-config/                    # Source repository
 ├── *.org files                    # Literate source files
 ├── Makefile                       # Tangling automation
-├── CLAUDE.md                      # System documentation
+├── docs/
+│   ├── setup/
+│   │   ├── CLAUDE.md              # System documentation
+│   │   ├── PROJECT_STATE.md       # Project state
+│   │   └── CONTINUATION_PROMPT.md # AI continuation prompts
+│   ├── reference/
+│   │   ├── KEYBINDINGS_CHEATSHEET.md
+│   │   ├── CHEAT_CARD.md
+│   │   └── QUICK_REFERENCE.md
+│   └── guides/
+│       └── WINDOW_MANAGEMENT.md   # Window management guide
 └── *_CHEATSHEET.md               # Reference materials
 
 ~/.config-backups/                 # Basic backup system
@@ -182,7 +192,7 @@ literate-config/                    # Source repository
    - ✅ Graceful handling of missing dependencies
 
 6. **Documentation & References**:
-   - ✅ Complete system guide (CLAUDE.md)
+   - ✅ Complete system guide (docs/setup/CLAUDE.md)
    - ✅ Detailed keybindings reference
    - ✅ Quick reference for daily use
    - ✅ Printable cheat card

@@ -15,9 +15,9 @@ Hola, tengo un proyecto de literate configuration para Doom Emacs y Zsh en `~/or
 3. **Opcional**: Configurar el sistema de dotfiles con `config-init-dotfiles`
 
 **Archivos de referencia**:
-- `PROJECT_STATE.md` - Estado completo del proyecto
-- `CLAUDE.md` - Documentación del sistema  
-- `QUICK_REFERENCE.md` - Comandos esenciales
+- `docs/setup/PROJECT_STATE.md` - Estado completo del proyecto
+- `docs/setup/CLAUDE.md` - Documentación del sistema  
+- `docs/reference/QUICK_REFERENCE.md` - Comandos esenciales
 
 **Funciones clave implementadas**:
 - `doom-test-config` - Testing aislado de configuraciones
@@ -25,7 +25,7 @@ Hola, tengo un proyecto de literate configuration para Doom Emacs y Zsh en `~/or
 - `config-status` - Estado del sistema
 - `config-init-dotfiles` - Sistema de dotfiles con symlinks
 
-Por favor lee `PROJECT_STATE.md` para entender el contexto completo y ayúdame a completar las tareas pendientes. El sistema está listo para producción, solo necesito aplicar y probar las configuraciones.
+Por favor lee `docs/setup/PROJECT_STATE.md` para entender el contexto completo y ayúdame a completar las tareas pendientes. El sistema está listo para producción, solo necesito aplicar y probar las configuraciones.
 
 ---
 

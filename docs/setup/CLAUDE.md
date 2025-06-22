@@ -355,13 +355,13 @@ config-restore
 
 This repository includes comprehensive reference materials:
 
-- **`KEYBINDINGS_CHEATSHEET.md`** - Complete keybindings and commands reference
-- **`QUICK_REFERENCE.md`** - Essential commands for daily use  
-- **`CHEAT_CARD.md`** - Printable cheat card format
-- **`CLAUDE.md`** - This comprehensive guide
+- **`docs/reference/KEYBINDINGS_CHEATSHEET.md`** - Complete keybindings and commands reference
+- **`docs/reference/QUICK_REFERENCE.md`** - Essential commands for daily use  
+- **`docs/reference/CHEAT_CARD.md`** - Printable cheat card format
+- **`docs/setup/CLAUDE.md`** - This comprehensive guide
 
 ### Key Maps and Documentation Guidelines
-- Siempre que se agregen, modifiquen o eliminen los key maps documentalo en el archivo KEYBINDINGS_CHEATSHEET.md y CHEAT_CARD.md
+- Siempre que se agregen, modifiquen o eliminen los key maps documentalo en el archivo docs/reference/KEYBINDINGS_CHEATSHEET.md y docs/reference/CHEAT_CARD.md
 - **Recuerda generar un commmit message y preguntar si se quiere publicar siempre tras finalizar los cambios**
 
 For quick lookup during development, refer to these files or keep the cheat card handy.
