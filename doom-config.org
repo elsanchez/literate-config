@@ -323,81 +323,322 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
             (lambda ()
               (treemacs-add-and-display-current-project-exclusively)
               (other-window 1))))
-(defun elsanchez/doom-reload-config ()
-  "Tangle config, doom sync, then restart the Emacs daemon and open a new GUI frame."
-  (interactive)
-  (let* ((doom-bin (or (executable-find "doom")
-                       (expand-file-name "~/.config/emacs/bin/doom")))
-         (cmd (when (and doom-bin (file-executable-p doom-bin))
-                (format "make && %s sync" doom-bin))))
-    (unless cmd
-      (user-error "Cannot find Doom binary!"))
-    ;; Kick off the compile and get its buffer
-    (let ((comp-buf (let ((default-directory "~/org/literate-config/"))
-                      (compile cmd))))
-      ;; Once compile finishes, grab its process and attach a sentinel
-      (with-current-buffer comp-buf
-        (let ((proc (get-buffer-process (current-buffer))))
-          (when proc
-            (set-process-sentinel
-             proc
-             (lambda (process event)
-               (when (and (memq (process-status process) '(exit signal))
-                          (= (process-exit-status process) 0))
-                 ;; Successful build → ask and restart
-                 (when (y-or-n-p "Build OK. Restart daemon & open frame? ")
-                   (start-process-shell-command
-                    "restart-emacs-daemon" nil
-                    "systemctl --user restart emacs.service")
-                   (run-at-time
-                    "2 sec" nil
-                    (lambda ()
-                      (start-process "emacs-new-frame" nil "emacsclient" "-c")))))
-               (unless (= (process-exit-status process) 0)
-                 (message "⚠️ Build failed (%s)" event))))))))))
 
-(defun elsanchez/doom-reload-config ()
-  "Tangle config, doom sync, restart Emacs daemon y luego open a new GUI frame."
+;; Configuration management and validation functions
+(defun elsanchez/backup-configs ()
+  "Create backup of current configuration files."
   (interactive)
-  ;; Lanzar compile + sync
-  (let* ((doom-bin (or (executable-find "doom")
-                       (expand-file-name "~/.config/emacs/bin/doom")))
-         (cmd   (and doom-bin (file-executable-p doom-bin)
-                    (format "make && %s sync" doom-bin))))
-    (unless cmd
-      (user-error "Cannot find Doom binary!"))
+  (let ((backup-dir (expand-file-name "~/.config-backups"))
+        (timestamp (format-time-string "%Y%m%d_%H%M%S")))
+    (message "📦 Creating configuration backup...")
+    (make-directory backup-dir t)
+    
+    ;; Initialize git repo if needed
+    (unless (file-directory-p (concat backup-dir "/.git"))
+      (let ((default-directory backup-dir))
+        (shell-command "git init")
+        (shell-command "git config user.name 'Config Backup'")
+        (shell-command "git config user.email 'backup@localhost'")
+        (message "✅ Initialized backup repository")))
+    
+    (let ((default-directory backup-dir))
+      ;; Copy configs with timestamp
+      (when (file-exists-p "~/.zshrc")
+        (copy-file "~/.zshrc" (format "zshrc_%s" timestamp) t))
+      (when (file-directory-p "~/.config/doom")
+        (copy-directory "~/.config/doom" (format "doom_%s" timestamp) nil t))
+      (when (file-exists-p "~/.p10k.zsh")
+        (copy-file "~/.p10k.zsh" (format "p10k_%s.zsh" timestamp) t))
+      
+      ;; Commit backup
+      (shell-command "git add .")
+      (shell-command (format "git commit -m 'Backup %s'" timestamp))
+      (message "✅ Backup created: %s" timestamp))))
+
+(defun elsanchez/validate-doom-config ()
+  "Validate Doom Emacs configuration before applying."
+  (interactive)
+  (let ((doom-bin (or (executable-find "doom")
+                      (expand-file-name "~/.config/emacs/bin/doom"))))
+    (if (and doom-bin (file-executable-p doom-bin))
+        (progn
+          (message "🔍 Validating Doom configuration...")
+          (let ((result (shell-command-to-string (format "%s doctor" doom-bin))))
+            (if (string-match-p "error\\|Error\\|ERROR" result)
+                (progn
+                  (message "❌ Doom configuration has errors:")
+                  (message "%s" result)
+                  nil)
+              (progn
+                (message "✅ Doom configuration validation passed")
+                t))))
+      (progn
+        (message "❌ Doom binary not found")
+        nil))))
+
+(defun elsanchez/list-config-backups ()
+  "List available configuration backups."
+  (interactive)
+  (let ((backup-dir (expand-file-name "~/.config-backups")))
+    (if (file-directory-p (concat backup-dir "/.git"))
+        (let ((default-directory backup-dir))
+          (message "📋 Available configuration backups:")
+          (message "%s" (shell-command-to-string "git log --oneline --format='%C(yellow)%h%C(reset) %C(green)%ad%C(reset) %s' --date=short | head -10")))
+      (message "❌ No backup repository found"))))
+
+(defun elsanchez/test-doom-config ()
+  "Test Doom configuration in isolated environment before applying."
+  (interactive)
+  (message "🧪 Testing Doom configuration...")
+  (let ((default-directory "~/org/literate-config/"))
+    (async-shell-command "doom-test-config" "*Doom Config Test*")))
+
+(defun elsanchez/stage-doom-config ()
+  "Stage Doom configuration for testing without affecting current setup."
+  (interactive)
+  (when (y-or-n-p "🎭 Stage configuration for testing? This will backup current config.")
+    (message "🎭 Staging Doom configuration...")
     (let ((default-directory "~/org/literate-config/"))
-      (compile cmd)))
-  ;; Sentinel dentro del compile…
-  (with-current-buffer "*compilation*"
-    (let ((proc (get-buffer-process (current-buffer))))
-      (when proc
-        (set-process-sentinel
-         proc
-         (lambda (process event)
-           (when (and (memq (process-status process) '(exit signal))
-                      (= (process-exit-status process) 0))
-             (when (y-or-n-p "Build ok. Restart daemon & open frame? ")
-               ;; restart systemd unit
-               (start-process-shell-command
-                "restart-emacs-daemon" nil
-                "systemctl --user restart emacs.service")
-               ;; Debug message
-               (message "⏳ Esperando 3s para emacsclient…")
-               ;; Launch client after delay
-               (run-at-time
-                "3 sec" nil
-                (lambda ()
-                  (message "🚀 Ejecutando emacsclient -c")
-                  (start-process
-                   "emacs-new-frame" "*emacs-new-frame-log*"
-                   (or (executable-find "emacsclient") "emacsclient")
-                   "-n" "-c")))))))))))
+      (async-shell-command "doom-stage-config" "*Doom Config Staging*"))))
 
+(defun elsanchez/rollback-doom-config ()
+  "Rollback to previous Doom configuration."
+  (interactive)
+  (when (y-or-n-p "🔄 Rollback to previous configuration?")
+    (message "🔄 Rolling back Doom configuration...")
+    (async-shell-command "doom-rollback" "*Doom Config Rollback*")))
+
+(defun elsanchez/restart-emacs-daemon ()
+  "Smart restart of Emacs daemon with multiple options."
+  (interactive)
+  (let ((choice (read-char-choice 
+                 "🔄 Restart method: [a]uto restart, [m]anual restart, [r]eload only, [s]kip: " 
+                 '(?a ?m ?r ?s))))
+    (cond
+     ;; Auto restart (recommended)
+     ((eq choice ?a)
+      (message "🔄 Auto-restarting Emacs daemon...")
+      (elsanchez/auto-restart-daemon))
+     
+     ;; Manual restart
+     ((eq choice ?m)
+      (message "🔧 Manual restart mode")
+      (when (y-or-n-p "🔄 Restart daemon now? ")
+        (elsanchez/restart-daemon-only)
+        (when (y-or-n-p "🖼️ Open new frame? ")
+          (elsanchez/open-new-frame))))
+     
+     ;; Reload only (no restart)
+     ((eq choice ?r)
+      (message "♻️ Reloading configuration without restart...")
+      (load-file "~/.config/doom/config.el"))
+     
+     ;; Skip restart
+     ((eq choice ?s)
+      (message "⏭️ Skipping restart. Configuration applied."))
+     
+     (t (message "❌ Invalid choice.")))))
+
+(defun elsanchez/auto-restart-daemon ()
+  "Automatically restart daemon and open new frame."
+  (interactive)
+  (message "🔄 Restarting Emacs daemon...")
+  
+  ;; Check if service exists and is active
+  (let ((service-status (shell-command-to-string "systemctl --user is-active emacs.service 2>/dev/null")))
+    (if (string-match-p "active" service-status)
+        (progn
+          (message "📋 Emacs service is active, restarting...")
+          (start-process-shell-command 
+           "restart-emacs-daemon" nil
+           "systemctl --user restart emacs.service")
+          
+          ;; Wait and verify restart
+          (run-at-time
+           "2 sec" nil
+           (lambda ()
+             (let ((new-status (shell-command-to-string "systemctl --user is-active emacs.service 2>/dev/null")))
+               (if (string-match-p "active" new-status)
+                   (progn
+                     (message "✅ Daemon restarted successfully")
+                     (run-at-time
+                      "1 sec" nil
+                      (lambda ()
+                        (when (y-or-n-p "🖼️ Open new Emacs frame? ")
+                          (elsanchez/open-new-frame)))))
+                 (message "❌ Daemon restart failed. Check with: systemctl --user status emacs.service"))))))
+      
+      ;; Service not active, try alternative restart methods
+      (progn
+        (message "⚠️ Emacs service not found or inactive")
+        (when (y-or-n-p "🔄 Try alternative restart method? ")
+          (elsanchez/alternative-restart))))))
+
+(defun elsanchez/restart-daemon-only ()
+  "Restart only the daemon without opening new frame."
+  (interactive)
+  (message "🔄 Restarting Emacs daemon...")
+  (start-process-shell-command 
+   "restart-emacs-daemon" nil
+   "systemctl --user restart emacs.service")
+  (message "✅ Restart command sent"))
+
+(defun elsanchez/open-new-frame ()
+  "Open new Emacs frame with error handling."
+  (interactive)
+  (message "🖼️ Opening new Emacs frame...")
+  (condition-case err
+      (progn
+        (start-process "emacs-new-frame" nil "emacsclient" "-c")
+        (message "✅ New frame opened"))
+    (error 
+     (message "❌ Failed to open frame: %s" (error-message-string err))
+     (message "💡 Try: emacsclient -c manually"))))
+
+(defun elsanchez/alternative-restart ()
+  "Alternative restart methods when systemd service is not available."
+  (interactive)
+  (let ((choice (read-char-choice 
+                 "🔧 Alternative method: [k]ill and start, [c]lient restart, [m]anual: " 
+                 '(?k ?c ?m))))
+    (cond
+     ;; Kill current daemon and start new one
+     ((eq choice ?k)
+      (message "💀 Killing current Emacs daemon...")
+      (start-process-shell-command "kill-emacs" nil "pkill -f 'emacs.*--daemon'")
+      (run-at-time
+       "2 sec" nil
+       (lambda ()
+         (message "🚀 Starting new daemon...")
+         (start-process-shell-command "start-emacs-daemon" nil "emacs --daemon")
+         (run-at-time
+          "3 sec" nil
+          (lambda ()
+            (when (y-or-n-p "🖼️ Open new frame? ")
+              (elsanchez/open-new-frame)))))))
+     
+     ;; Client-based restart
+     ((eq choice ?c)
+      (message "🔄 Restarting via emacsclient...")
+      (start-process-shell-command "restart-via-client" nil "emacsclient -e '(kill-emacs)' && emacs --daemon")
+      (run-at-time
+       "3 sec" nil
+       (lambda ()
+         (when (y-or-n-p "🖼️ Open new frame? ")
+           (elsanchez/open-new-frame)))))
+     
+     ;; Manual instructions
+     ((eq choice ?m)
+      (message "🔧 Manual restart instructions:")
+      (message "1. Run: emacsclient -e '(kill-emacs)'")
+      (message "2. Run: emacs --daemon")
+      (message "3. Run: emacsclient -c"))
+     
+     (t (message "❌ Invalid choice.")))))
+
+(defun elsanchez/doom-reload-config ()
+  "Enhanced config reload with testing options, backup, validation, and error handling."
+  (interactive)
+  (let* ((doom-bin (or (executable-find "doom")
+                       (expand-file-name "~/.config/emacs/bin/doom")))
+         (config-dir "~/org/literate-config/"))
+    
+    (unless (and doom-bin (file-executable-p doom-bin))
+      (user-error "❌ Cannot find Doom binary!"))
+    
+    (unless (file-directory-p (expand-file-name config-dir))
+      (user-error "❌ Config directory not found: %s" config-dir))
+    
+    ;; Ask user for testing preference
+    (let ((choice (read-char-choice 
+                   "🚀 Choose reload method: [t]est first, [s]tage for testing, [d]irect reload, [c]ancel: " 
+                   '(?t ?s ?d ?c))))
+      (cond
+       ;; Test first, then ask to proceed
+       ((eq choice ?t)
+        (message "🧪 Testing configuration first...")
+        (let ((test-cmd "doom-test-config")
+              (default-directory (expand-file-name config-dir)))
+          (let ((test-result (shell-command test-cmd)))
+            (if (= test-result 0)
+                (progn
+                  (message "✅ Tests passed!")
+                  (when (y-or-n-p "🚀 Tests passed. Proceed with live deployment? ")
+                    (elsanchez/doom-reload-direct)))
+              (message "❌ Tests failed. Check *Messages* buffer for details.")))))
+       
+       ;; Stage for manual testing
+       ((eq choice ?s)
+        (message "🎭 Staging configuration for testing...")
+        (elsanchez/stage-doom-config))
+       
+       ;; Direct reload (original behavior)
+       ((eq choice ?d)
+        (elsanchez/doom-reload-direct))
+       
+       ;; Cancel
+       ((eq choice ?c)
+        (message "❌ Reload cancelled."))
+       
+       (t (message "❌ Invalid choice.")))))
+
+(defun elsanchez/doom-reload-direct ()
+  "Direct config reload with backup, validation, and error handling."
+  (interactive)
+  (let* ((doom-bin (or (executable-find "doom")
+                       (expand-file-name "~/.config/emacs/bin/doom")))
+         (config-dir "~/org/literate-config/"))
+    
+    (message "🚀 Starting direct config reload...")
+    
+    ;; Step 1: Create backup
+    (elsanchez/backup-configs)
+    
+    ;; Step 2: Tangle and sync
+    (let ((cmd (format "make && %s sync" doom-bin))
+          (default-directory (expand-file-name config-dir)))
+      
+      (message "🔧 Running: %s" cmd)
+      (let ((comp-buf (compile cmd)))
+        
+        ;; Step 3: Set up completion handler
+        (with-current-buffer comp-buf
+          (let ((proc (get-buffer-process (current-buffer))))
+            (when proc
+              (set-process-sentinel
+               proc
+               (lambda (process event)
+                 (cond
+                  ;; Success case
+                  ((and (memq (process-status process) '(exit signal))
+                        (= (process-exit-status process) 0))
+                   (message "✅ Build completed successfully")
+                   
+                   ;; Step 4: Validate before restart
+                   (if (elsanchez/validate-doom-config)
+                       (elsanchez/restart-emacs-daemon)
+                     (message "⚠️ Validation failed. Daemon not restarted."))))
+                  
+                  ;; Failure case
+                  (t
+                   (message "❌ Build failed (%s)" event)
+                   (message "💡 Previous configuration backup available")
+                   (message "💡 Run M-x elsanchez/list-config-backups to restore"))))))))))))
 
 (map! :leader
       :desc "Recargar literate config + doom sync + restart daemon"
-      "r d" #'elsanchez/doom-reload-config)
+      "r d" #'elsanchez/doom-reload-config
+      (:prefix ("r t" . "config testing")
+       :desc "Test config in isolation" "t" #'elsanchez/test-doom-config
+       :desc "Stage config for testing" "s" #'elsanchez/stage-doom-config
+       :desc "Rollback to previous config" "r" #'elsanchez/rollback-doom-config
+       :desc "List available backups" "l" #'elsanchez/list-config-backups
+       :desc "Direct reload (no testing)" "d" #'elsanchez/doom-reload-direct)
+      (:prefix ("r e" . "emacs daemon")
+       :desc "Smart restart daemon" "r" #'elsanchez/restart-emacs-daemon
+       :desc "Auto restart daemon" "a" #'elsanchez/auto-restart-daemon
+       :desc "Restart daemon only" "d" #'elsanchez/restart-daemon-only
+       :desc "Open new frame" "f" #'elsanchez/open-new-frame))
 
 ;; enable sudo-edit commands
 (use-package! sudo-edit
@@ -573,14 +814,14 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
         (:waiting . "/user:auto")
         (:initial-waiting . "/user:understand-guidelines")))
 
-(ecc-auto-periodical-toggle)
+;; (ecc-auto-periodical-toggle)  ; Function not available - commented out
 
 (setq --ecc-auto-response-periodic-interval 300
       ecc-auto-periodical-commands
       '((10 . "/compact")
         (20 . "/user:auto")))
 
-(--ecc-vterm-utils-enable-yank-advice)
+;; (--ecc-vterm-utils-enable-yank-advice)  ; Function not available - commented out
 
 ;; claude-code config
 (use-package! claude-code
@@ -591,7 +832,7 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 Respond only with code or clear suggestions. Avoid vague or generic replies."))
 
 (map! :leader
-      (:prefix ("a" . "AI / Claude")
+      (:prefix ("ai" . "AI / Claude")
        :desc "Claude: chat in popup" "c" #'claude-chat
        :desc "Claude: ask region"   "r" #'claude-code-region
        :desc "Claude: ask buffer"   "b" #'claude-code-buffer

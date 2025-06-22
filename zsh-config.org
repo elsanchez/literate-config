@@ -15,10 +15,84 @@ fi
 
 # Oh My Zsh setup
 export ZSH="$HOME/.oh-my-zsh"
-ZSH_THEME="powerlevel10k/powerlevel10k"
 
-# Plugins setup
-plugins=(git zsh-autosuggestions zsh-syntax-highlighting direnv uv tmux)
+# Check if Oh My Zsh exists
+if [[ ! -d "$ZSH" ]]; then
+  echo "⚠️  Oh My Zsh not found. Install it with:"
+  echo "sh -c \"\$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\""
+  return 1
+fi
+
+# Check if powerlevel10k theme exists
+if [[ -d "$ZSH/custom/themes/powerlevel10k" ]]; then
+  ZSH_THEME="powerlevel10k/powerlevel10k"
+else
+  echo "⚠️  Powerlevel10k theme not found. Install it with:"
+  echo "git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \$ZSH_CUSTOM/themes/powerlevel10k"
+  ZSH_THEME="robbyrussell"  # Fallback theme
+fi
+
+# Check and setup plugins
+declare -a available_plugins=()
+declare -a missing_plugins=()
+
+# Define desired plugins
+desired_plugins=(git zsh-autosuggestions zsh-syntax-highlighting direnv uv tmux)
+
+for plugin in "${desired_plugins[@]}"; do
+  case $plugin in
+    git|tmux) 
+      # Built-in plugins
+      available_plugins+=($plugin)
+      ;;
+    zsh-autosuggestions)
+      if [[ -d "$ZSH/custom/plugins/zsh-autosuggestions" ]]; then
+        available_plugins+=($plugin)
+      else
+        missing_plugins+=($plugin)
+      fi
+      ;;
+    zsh-syntax-highlighting)
+      if [[ -d "$ZSH/custom/plugins/zsh-syntax-highlighting" ]]; then
+        available_plugins+=($plugin)
+      else
+        missing_plugins+=($plugin)
+      fi
+      ;;
+    direnv|uv)
+      if command -v $plugin >/dev/null 2>&1; then
+        available_plugins+=($plugin)
+      else
+        missing_plugins+=($plugin)
+      fi
+      ;;
+  esac
+done
+
+# Report missing plugins
+if [[ ${#missing_plugins[@]} -gt 0 ]]; then
+  echo "⚠️  Missing zsh plugins: ${missing_plugins[*]}"
+  echo "Install missing plugins:"
+  for plugin in "${missing_plugins[@]}"; do
+    case $plugin in
+      zsh-autosuggestions)
+        echo "  git clone https://github.com/zsh-users/zsh-autosuggestions \$ZSH_CUSTOM/plugins/zsh-autosuggestions"
+        ;;
+      zsh-syntax-highlighting)
+        echo "  git clone https://github.com/zsh-users/zsh-syntax-highlighting.git \$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
+        ;;
+      direnv)
+        echo "  sudo apt install direnv  # or: curl -sfL https://direnv.net/install.sh | bash"
+        ;;
+      uv)
+        echo "  curl -LsSf https://astral.sh/uv/install.sh | sh"
+        ;;
+    esac
+  done
+fi
+
+# Set available plugins
+plugins=(${available_plugins[@]})
 
 # Load Oh My Zsh
 source $ZSH/oh-my-zsh.sh
@@ -36,12 +110,14 @@ if command -v pipx > /dev/null 2>&1; then
 fi
 
 # Setup emacs, npm, nvim environment
-export PATH="$PATH:$HOME/.config/emacs/bin/doom:$HOME/.npm-global/bin:/opt/nvim-linux-x86_64/bin"
+export PATH="$PATH:$HOME/.config/emacs/bin:$HOME/.npm-global/bin:/opt/nvim-linux-x86_64/bin"
 
 # Golang environment
-export PATH=$PATH:$/usr/local/go/bin
-export GOPATH=$HOME/go
-export PATH=$PATH:$GOPATH/bin
+if [[ -d "/usr/local/go/bin" ]]; then
+  export PATH=$PATH:/usr/local/go/bin
+  export GOPATH=$HOME/go
+  export PATH=$PATH:$GOPATH/bin
+fi
 
 # Aliases
 # Navigation and general
@@ -104,19 +180,37 @@ download_video() {
   local url=$1
   local output_filename=$2
   local output_dir=~/Downloads/videos
+  
+  if [[ -z "$url" ]]; then
+    echo "❌ Usage: download_video <url> [filename]"
+    return 1
+  fi
+  
   mkdir -p "$output_dir"
 
   case "$url" in
     ,*instagram.com*|*deviantart.com*)
-        cookies_file=~/Documents/cookies.instagram.txt
-        gallery-dl --cookies ${cookies_file} \
-                 --output "$output_dir/${output_filename}.%(extension)s" "$url"
+      if ! command -v gallery-dl >/dev/null 2>&1; then
+        echo "❌ gallery-dl not found. Install with: pip install gallery-dl"
+        return 1
+      fi
+      cookies_file=~/Documents/cookies.instagram.txt
+      gallery-dl --cookies ${cookies_file} \
+               --output "$output_dir/${output_filename}.%(extension)s" "$url"
       ;;
     ,*x.com*)
-        cookies_file=~/Documents/cookies.twitter.txt
+      if ! command -v yt-dlp >/dev/null 2>&1; then
+        echo "❌ yt-dlp not found. Install with: pip install yt-dlp"
+        return 1
+      fi
+      cookies_file=~/Documents/cookies.twitter.txt
       yt-dlp --cookies ${cookies_file} -o "${output_dir}/${output_filename}.%(ext)s" "$url"
       ;;
     ,*)
+      if ! command -v yt-dlp >/dev/null 2>&1; then
+        echo "❌ yt-dlp not found. Install with: pip install yt-dlp"
+        return 1
+      fi
       yt-dlp -o "${output_dir}/${output_filename}.%(ext)s" "$url"
       ;;
   esac
@@ -124,6 +218,16 @@ download_video() {
 
 # Lista y selecciona una sesión tmux con fzf
 tms() {
+  if ! command -v tmux >/dev/null 2>&1; then
+    echo "❌ tmux not found. Install with: sudo apt install tmux"
+    return 1
+  fi
+  
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "❌ fzf not found. Install with: sudo apt install fzf"
+    return 1
+  fi
+  
   local session
   session=$(tmux list-sessions -F "#{session_name}" 2>/dev/null | fzf --prompt="🔍 Tmux session: ")
 
@@ -136,6 +240,11 @@ tms() {
 
 # Crea o conecta a una sesión (por nombre o default)
 tmgo() {
+  if ! command -v tmux >/dev/null 2>&1; then
+    echo "❌ tmux not found. Install with: sudo apt install tmux"
+    return 1
+  fi
+  
   local session="${1:-default}"
   tmux has-session -t "$session" 2>/dev/null
 
@@ -150,6 +259,16 @@ tmgo() {
 
 # Mata sesión desde fzf
 tmkill() {
+  if ! command -v tmux >/dev/null 2>&1; then
+    echo "❌ tmux not found. Install with: sudo apt install tmux"
+    return 1
+  fi
+  
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "❌ fzf not found. Install with: sudo apt install fzf"
+    return 1
+  fi
+  
   local session
   session=$(tmux list-sessions -F "#{session_name}" 2>/dev/null | fzf --prompt="❌ Kill session: ")
 
@@ -159,6 +278,881 @@ tmkill() {
   else
     echo "❌ No session selected."
   fi
+}
+
+# Enhanced Configuration management with symlinks and versioning
+config-backup() {
+  local backup_dir="$HOME/.config-backups"
+  local timestamp=$(date +"%Y%m%d_%H%M%S")
+  
+  echo "📦 Creating configuration backup..."
+  mkdir -p "$backup_dir"
+  
+  # Initialize git repo if it doesn't exist
+  if [[ ! -d "$backup_dir/.git" ]]; then
+    cd "$backup_dir"
+    git init
+    git config user.name "Config Backup"
+    git config user.email "backup@localhost"
+    echo "✅ Initialized backup repository"
+  fi
+  
+  cd "$backup_dir"
+  
+  # Copy current configs with better organization
+  echo "💾 Backing up configurations..."
+  [[ -f ~/.zshrc ]] && cp ~/.zshrc "zshrc_$timestamp"
+  [[ -d ~/.config/doom ]] && cp -r ~/.config/doom "doom_$timestamp"
+  [[ -f ~/.p10k.zsh ]] && cp ~/.p10k.zsh "p10k_$timestamp.zsh"
+  
+  # Commit backup
+  git add .
+  git commit -m "Backup $timestamp" >/dev/null 2>&1
+  
+  echo "✅ Backup created: $timestamp"
+  echo "📁 Location: $backup_dir"
+}
+
+# Enhanced system with symlinks and proper versioning
+config-init-dotfiles() {
+  echo "🔗 Initializing dotfiles repository with symlinks..."
+  
+  local dotfiles_dir="$HOME/.dotfiles"
+  local config_source="$HOME/org/literate-config"
+  
+  # Create dotfiles directory
+  mkdir -p "$dotfiles_dir"
+  cd "$dotfiles_dir"
+  
+  # Initialize git repo if needed
+  if [[ ! -d ".git" ]]; then
+    git init
+    git config user.name "$(git config --global user.name || echo 'Config Manager')"
+    git config user.email "$(git config --global user.email || echo 'config@localhost')"
+    echo "✅ Initialized dotfiles repository"
+  fi
+  
+  # Create directory structure
+  mkdir -p doom zsh scripts backups
+  
+  # Move existing configs to dotfiles repo (if they exist)
+  echo "📁 Organizing configuration files..."
+  
+  # Handle .zshrc
+  if [[ -f ~/.zshrc && ! -L ~/.zshrc ]]; then
+    echo "💾 Moving ~/.zshrc to dotfiles repo..."
+    mv ~/.zshrc "$dotfiles_dir/zsh/zshrc"
+    git add zsh/zshrc
+  fi
+  
+  # Handle .p10k.zsh
+  if [[ -f ~/.p10k.zsh && ! -L ~/.p10k.zsh ]]; then
+    echo "💾 Moving ~/.p10k.zsh to dotfiles repo..."
+    mv ~/.p10k.zsh "$dotfiles_dir/zsh/p10k.zsh"
+    git add zsh/p10k.zsh
+  fi
+  
+  # Handle doom config
+  if [[ -d ~/.config/doom && ! -L ~/.config/doom ]]; then
+    echo "💾 Moving ~/.config/doom to dotfiles repo..."
+    mv ~/.config/doom "$dotfiles_dir/doom/config"
+    git add doom/
+  fi
+  
+  # Initial commit
+  if git status --porcelain | grep -q .; then
+    git commit -m "Initial dotfiles setup - moved existing configs"
+    echo "✅ Initial dotfiles commit created"
+  fi
+  
+  echo "🔗 Setting up symlinks..."
+  config-create-symlinks
+}
+
+config-create-symlinks() {
+  local dotfiles_dir="$HOME/.dotfiles"
+  
+  if [[ ! -d "$dotfiles_dir" ]]; then
+    echo "❌ Dotfiles directory not found. Run config-init-dotfiles first."
+    return 1
+  fi
+  
+  echo "🔗 Creating symbolic links..."
+  
+  # Create necessary directories
+  mkdir -p ~/.config
+  
+  # Symlink zsh files
+  if [[ -f "$dotfiles_dir/zsh/zshrc" ]]; then
+    [[ -L ~/.zshrc ]] && rm ~/.zshrc
+    [[ -f ~/.zshrc ]] && mv ~/.zshrc ~/.zshrc.backup.$(date +%Y%m%d_%H%M%S)
+    ln -sf "$dotfiles_dir/zsh/zshrc" ~/.zshrc
+    echo "✅ Linked ~/.zshrc"
+  fi
+  
+  if [[ -f "$dotfiles_dir/zsh/p10k.zsh" ]]; then
+    [[ -L ~/.p10k.zsh ]] && rm ~/.p10k.zsh
+    [[ -f ~/.p10k.zsh ]] && mv ~/.p10k.zsh ~/.p10k.zsh.backup.$(date +%Y%m%d_%H%M%S)
+    ln -sf "$dotfiles_dir/zsh/p10k.zsh" ~/.p10k.zsh
+    echo "✅ Linked ~/.p10k.zsh"
+  fi
+  
+  # Symlink doom config
+  if [[ -d "$dotfiles_dir/doom/config" ]]; then
+    [[ -L ~/.config/doom ]] && rm ~/.config/doom
+    [[ -d ~/.config/doom ]] && mv ~/.config/doom ~/.config/doom.backup.$(date +%Y%m%d_%H%M%S)
+    ln -sf "$dotfiles_dir/doom/config" ~/.config/doom
+    echo "✅ Linked ~/.config/doom"
+  fi
+  
+  echo "🔗 Symlinks created successfully!"
+}
+
+config-sync-to-dotfiles() {
+  echo "🔄 Syncing generated configs to dotfiles repository..."
+  
+  local dotfiles_dir="$HOME/.dotfiles"
+  local config_source="$HOME/org/literate-config"
+  
+  if [[ ! -d "$dotfiles_dir" ]]; then
+    echo "❌ Dotfiles directory not found. Run config-init-dotfiles first."
+    return 1
+  fi
+  
+  cd "$dotfiles_dir"
+  
+  # Copy latest generated configs
+  echo "📋 Copying generated configurations..."
+  
+  # Copy zshrc if it's not a symlink (i.e., freshly generated)
+  if [[ -f ~/.zshrc && ! -L ~/.zshrc ]]; then
+    cp ~/.zshrc zsh/zshrc
+    echo "✅ Synced .zshrc"
+  elif [[ -L ~/.zshrc ]]; then
+    echo "ℹ️  .zshrc is already symlinked"
+  fi
+  
+  # Copy doom config if it's not a symlink
+  if [[ -d ~/.config/doom && ! -L ~/.config/doom ]]; then
+    rm -rf doom/config
+    cp -r ~/.config/doom doom/config
+    echo "✅ Synced doom config"
+  elif [[ -L ~/.config/doom ]]; then
+    echo "ℹ️  doom config is already symlinked"
+  fi
+  
+  # Copy p10k config
+  if [[ -f ~/.p10k.zsh && ! -L ~/.p10k.zsh ]]; then
+    cp ~/.p10k.zsh zsh/p10k.zsh
+    echo "✅ Synced .p10k.zsh"
+  elif [[ -L ~/.p10k.zsh ]]; then
+    echo "ℹ️  .p10k.zsh is already symlinked"
+  fi
+  
+  # Commit changes
+  if git status --porcelain | grep -q .; then
+    local timestamp=$(date +"%Y%m%d_%H%M%S")
+    git add .
+    git commit -m "Sync configs $timestamp - $(git status --porcelain | wc -l) files changed"
+    echo "✅ Changes committed to dotfiles repo"
+  else
+    echo "ℹ️  No changes to commit"
+  fi
+}
+
+config-status() {
+  echo "📊 Configuration status:"
+  
+  local dotfiles_dir="$HOME/.dotfiles"
+  
+  # Check if dotfiles repo exists
+  if [[ -d "$dotfiles_dir/.git" ]]; then
+    echo "✅ Dotfiles repository: $dotfiles_dir"
+    cd "$dotfiles_dir"
+    echo "📋 Repository status:"
+    git log --oneline -5 | sed 's/^/  /'
+  else
+    echo "❌ No dotfiles repository found"
+    echo "💡 Run 'config-init-dotfiles' to set up"
+  fi
+  
+  echo ""
+  echo "🔗 Symlink status:"
+  
+  # Check symlinks
+  if [[ -L ~/.zshrc ]]; then
+    echo "✅ ~/.zshrc → $(readlink ~/.zshrc)"
+  else
+    echo "❌ ~/.zshrc is not a symlink"
+  fi
+  
+  if [[ -L ~/.p10k.zsh ]]; then
+    echo "✅ ~/.p10k.zsh → $(readlink ~/.p10k.zsh)"
+  else
+    echo "❌ ~/.p10k.zsh is not a symlink"
+  fi
+  
+  if [[ -L ~/.config/doom ]]; then
+    echo "✅ ~/.config/doom → $(readlink ~/.config/doom)"
+  else
+    echo "❌ ~/.config/doom is not a symlink"
+  fi
+  
+  # Check backup system
+  local backup_dir="$HOME/.config-backups"
+  if [[ -d "$backup_dir/.git" ]]; then
+    echo ""
+    echo "💾 Backup system: active ($backup_dir)"
+  else
+    echo ""
+    echo "⚠️  Backup system: not initialized"
+  fi
+}
+
+config-restore() {
+  local backup_dir="$HOME/.config-backups"
+  
+  if [[ ! -d "$backup_dir/.git" ]]; then
+    echo "❌ No backup repository found. Run config-backup first."
+    return 1
+  fi
+  
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "❌ fzf required for interactive restore. Install with: sudo apt install fzf"
+    return 1
+  fi
+  
+  cd "$backup_dir"
+  
+  # List available backups
+  local backup_list=$(git log --oneline --format="%h %s" | head -20)
+  
+  if [[ -z "$backup_list" ]]; then
+    echo "❌ No backups available"
+    return 1
+  fi
+  
+  echo "Available backups:"
+  local selected=$(echo "$backup_list" | fzf --prompt="Select backup to restore: ")
+  
+  if [[ -z "$selected" ]]; then
+    echo "❌ No backup selected"
+    return 1
+  fi
+  
+  local commit_hash=$(echo "$selected" | awk '{print $1}')
+  
+  echo "🔄 Restoring configuration from backup: $selected"
+  echo "⚠️  This will overwrite current configurations. Continue? (y/N)"
+  read -r confirm
+  
+  if [[ "$confirm" =~ ^[Yy]$ ]]; then
+    # Create current backup before restore
+    config-backup
+    
+    # Find files from selected commit
+    git show --name-only "$commit_hash" | while read -r file; do
+      if [[ "$file" =~ ^zshrc_ ]]; then
+        git show "$commit_hash:$file" > ~/.zshrc
+        echo "✅ Restored ~/.zshrc"
+      elif [[ "$file" =~ ^p10k_ ]]; then
+        git show "$commit_hash:$file" > ~/.p10k.zsh
+        echo "✅ Restored ~/.p10k.zsh"
+      fi
+    done
+    
+    echo "✅ Configuration restored successfully"
+    echo "🔄 Reload your shell: source ~/.zshrc"
+  else
+    echo "❌ Restore cancelled"
+  fi
+}
+
+config-list-backups() {
+  local backup_dir="$HOME/.config-backups"
+  
+  if [[ ! -d "$backup_dir/.git" ]]; then
+    echo "❌ No backup repository found"
+    return 1
+  fi
+  
+  cd "$backup_dir"
+  echo "📋 Available configuration backups:"
+  git log --oneline --format="%C(yellow)%h%C(reset) %C(green)%ad%C(reset) %s" --date=short | head -10
+}
+
+# Validation functions
+validate-zsh-config() {
+  local config_file="${1:-$HOME/.zshrc}"
+  
+  if [[ ! -f "$config_file" ]]; then
+    echo "❌ Config file not found: $config_file"
+    return 1
+  fi
+  
+  echo "🔍 Validating zsh configuration..."
+  
+  # Basic syntax check
+  if ! zsh -n "$config_file" 2>/dev/null; then
+    echo "❌ Syntax errors found in $config_file"
+    zsh -n "$config_file"
+    return 1
+  fi
+  
+  echo "✅ Zsh syntax validation passed"
+  return 0
+}
+
+validate-doom-config() {
+  local doom_dir="${1:-$HOME/.config/doom}"
+  
+  if [[ ! -d "$doom_dir" ]]; then
+    echo "❌ Doom config directory not found: $doom_dir"
+    return 1
+  fi
+  
+  echo "🔍 Validating Doom Emacs configuration..."
+  
+  local doom_bin=$(command -v doom || echo "$HOME/.config/emacs/bin/doom")
+  
+  if [[ ! -x "$doom_bin" ]]; then
+    echo "❌ Doom binary not found or not executable"
+    return 1
+  fi
+  
+  # Run doom doctor to check for issues
+  if ! "$doom_bin" doctor >/dev/null 2>&1; then
+    echo "⚠️  Doom doctor found issues:"
+    "$doom_bin" doctor
+    return 1
+  fi
+  
+  echo "✅ Doom configuration validation passed"
+  return 0
+}
+
+# Enhanced Doom Emacs testing functions
+validate-elisp-syntax() {
+  local file="$1"
+  
+  if [[ ! -f "$file" ]]; then
+    echo "❌ File not found: $file"
+    return 1
+  fi
+  
+  echo "🔍 Validating Emacs Lisp syntax: $(basename "$file")"
+  
+  # Check syntax using emacs batch mode
+  if ! emacs --batch --eval "(progn (find-file \"$file\") (emacs-lisp-mode) (check-parens))" 2>/dev/null; then
+    echo "❌ Syntax errors found in $file"
+    return 1
+  fi
+  
+  echo "✅ Emacs Lisp syntax validation passed"
+  return 0
+}
+
+doom-test-config() {
+  echo "🧪 Testing Doom Emacs configuration in isolated environment..."
+  
+  local test_dir="$HOME/.doom-test"
+  local config_dir="~/org/literate-config"
+  local timestamp=$(date +"%Y%m%d_%H%M%S")
+  
+  # Create isolated test environment
+  echo "📁 Creating test environment: $test_dir"
+  rm -rf "$test_dir"
+  mkdir -p "$test_dir"
+  
+  # Tangle configurations to test directory
+  echo "🔧 Tangling configurations to test environment..."
+  cd "$config_dir"
+  
+  # Create temporary org files that tangle to test directory
+  local temp_dir=$(mktemp -d)
+  
+  for org_file in doom-config.org; do
+    if [[ -f "$org_file" ]]; then
+      echo "Processing $org_file..."
+      # Create modified version that tangles to test directory
+      sed "s|~/.config/doom|$test_dir|g" "$org_file" > "$temp_dir/test_$org_file"
+      
+      # Tangle to test directory
+      emacs --batch -l org --eval "(progn (find-file \"$temp_dir/test_$org_file\") (org-babel-tangle))"
+    fi
+  done
+  
+  # Validate generated files
+  echo "🔍 Validating generated configuration files..."
+  local validation_passed=true
+  
+  for elisp_file in "$test_dir"/*.el; do
+    if [[ -f "$elisp_file" ]]; then
+      if ! validate-elisp-syntax "$elisp_file"; then
+        validation_passed=false
+      fi
+    fi
+  done
+  
+  if [[ "$validation_passed" == "false" ]]; then
+    echo "❌ Configuration validation failed"
+    echo "📁 Test files available at: $test_dir"
+    rm -rf "$temp_dir"
+    return 1
+  fi
+  
+  # Test doom sync in isolated environment
+  echo "🔄 Testing doom sync with test configuration..."
+  local doom_bin=$(command -v doom || echo "$HOME/.config/emacs/bin/doom")
+  
+  if [[ -x "$doom_bin" ]]; then
+    # Set DOOMDIR to test directory
+    DOOMDIR="$test_dir" "$doom_bin" sync --force 2>/dev/null
+    if [[ $? -eq 0 ]]; then
+      echo "✅ Doom sync test passed"
+    else
+      echo "❌ Doom sync test failed"
+      echo "📁 Test files available at: $test_dir"
+      rm -rf "$temp_dir"
+      return 1
+    fi
+  else
+    echo "⚠️  Doom binary not found, skipping sync test"
+  fi
+  
+  echo "✅ All tests passed! Configuration is safe to deploy"
+  echo "🧹 Cleaning up test environment..."
+  rm -rf "$test_dir" "$temp_dir"
+  
+  return 0
+}
+
+doom-stage-config() {
+  echo "🎭 Staging Doom Emacs configuration for testing..."
+  
+  local staging_dir="$HOME/.doom-staging"
+  local config_dir="~/org/literate-config"
+  local backup_dir="$HOME/.config/doom.backup.$(date +%Y%m%d_%H%M%S)"
+  
+  # Create staging directory
+  mkdir -p "$staging_dir"
+  
+  # Backup current config
+  if [[ -d "$HOME/.config/doom" ]]; then
+    echo "💾 Backing up current configuration to: $backup_dir"
+    cp -r "$HOME/.config/doom" "$backup_dir"
+  fi
+  
+  # Tangle to staging
+  echo "🔧 Tangling to staging directory..."
+  cd "$config_dir"
+  
+  # Create temporary org files that tangle to staging
+  local temp_dir=$(mktemp -d)
+  
+  for org_file in doom-config.org; do
+    if [[ -f "$org_file" ]]; then
+      sed "s|~/.config/doom|$staging_dir|g" "$org_file" > "$temp_dir/staging_$org_file"
+      emacs --batch -l org --eval "(progn (find-file \"$temp_dir/staging_$org_file\") (org-babel-tangle))"
+    fi
+  done
+  
+  # Replace current config with staging
+  rm -rf "$HOME/.config/doom"
+  mv "$staging_dir" "$HOME/.config/doom"
+  
+  echo "✅ Configuration staged! Test it now."
+  echo "💡 To rollback: mv '$backup_dir' '$HOME/.config/doom'"
+  echo "💡 To keep changes: rm -rf '$backup_dir'"
+  
+  rm -rf "$temp_dir"
+}
+
+doom-rollback() {
+  echo "🔄 Rolling back Doom configuration..."
+  
+  # Find latest backup
+  local latest_backup=$(ls -1d "$HOME/.config/doom.backup."* 2>/dev/null | tail -1)
+  
+  if [[ -z "$latest_backup" ]]; then
+    echo "❌ No backup found to rollback to"
+    return 1
+  fi
+  
+  echo "📁 Rolling back to: $latest_backup"
+  rm -rf "$HOME/.config/doom"
+  mv "$latest_backup" "$HOME/.config/doom"
+  
+  echo "✅ Rollback completed"
+}
+
+doom-list-backups() {
+  echo "📋 Available Doom configuration backups:"
+  ls -1td "$HOME/.config/doom.backup."* 2>/dev/null | head -10 | while read backup; do
+    local timestamp=$(basename "$backup" | sed 's/doom.backup.//')
+    local size=$(du -sh "$backup" 2>/dev/null | cut -f1)
+    echo "  📁 $timestamp ($size)"
+  done
+  
+  if ! ls "$HOME/.config/doom.backup."* >/dev/null 2>&1; then
+    echo "  No backups found"
+  fi
+}
+
+# Emacs daemon management functions
+emacs-restart() {
+  echo "🔄 Restarting Emacs daemon..."
+  
+  # Check if systemd service is available and active
+  if systemctl --user is-active emacs.service >/dev/null 2>&1; then
+    echo "📋 Using systemd service..."
+    systemctl --user restart emacs.service
+    
+    # Wait a moment and check status
+    sleep 2
+    if systemctl --user is-active emacs.service >/dev/null 2>&1; then
+      echo "✅ Emacs daemon restarted successfully"
+      
+      # Offer to open new frame
+      echo -n "🖼️ Open new Emacs frame? (y/N): "
+      read -r response
+      if [[ "$response" =~ ^[Yy]$ ]]; then
+        emacs-frame
+      fi
+    else
+      echo "❌ Daemon restart failed"
+      echo "💡 Check status with: systemctl --user status emacs.service"
+    fi
+  else
+    echo "⚠️ Systemd service not found or inactive"
+    echo "🔧 Trying alternative restart method..."
+    emacs-restart-alternative
+  fi
+}
+
+emacs-restart-alternative() {
+  echo "🔧 Alternative restart methods:"
+  echo "1) Kill and restart daemon"
+  echo "2) Client-based restart"
+  echo "3) Manual instructions"
+  echo -n "Choose method (1-3): "
+  read -r choice
+  
+  case $choice in
+    1)
+      echo "💀 Killing current Emacs daemon..."
+      pkill -f 'emacs.*--daemon' 2>/dev/null
+      sleep 2
+      echo "🚀 Starting new daemon..."
+      emacs --daemon
+      sleep 3
+      if pgrep -f 'emacs.*--daemon' >/dev/null; then
+        echo "✅ Daemon restarted successfully"
+        echo -n "🖼️ Open new frame? (y/N): "
+        read -r response
+        if [[ "$response" =~ ^[Yy]$ ]]; then
+          emacs-frame
+        fi
+      else
+        echo "❌ Failed to start daemon"
+      fi
+      ;;
+    2)
+      echo "🔄 Restarting via emacsclient..."
+      emacsclient -e '(kill-emacs)' 2>/dev/null
+      sleep 2
+      emacs --daemon
+      sleep 3
+      echo "✅ Daemon restart completed"
+      ;;
+    3)
+      echo "🔧 Manual restart instructions:"
+      echo "1. Kill daemon: emacsclient -e '(kill-emacs)'"
+      echo "2. Start daemon: emacs --daemon"
+      echo "3. Open frame: emacsclient -c"
+      ;;
+    *)
+      echo "❌ Invalid choice"
+      ;;
+  esac
+}
+
+emacs-frame() {
+  echo "🖼️ Opening new Emacs frame..."
+  if command -v emacsclient >/dev/null 2>&1; then
+    if emacsclient -c >/dev/null 2>&1; then
+      echo "✅ New frame opened"
+    else
+      echo "❌ Failed to open frame"
+      echo "💡 Make sure daemon is running: emacs --daemon"
+    fi
+  else
+    echo "❌ emacsclient not found"
+  fi
+}
+
+emacs-status() {
+  echo "📊 Emacs daemon status:"
+  
+  # Check systemd service
+  if command -v systemctl >/dev/null 2>&1; then
+    local service_status=$(systemctl --user is-active emacs.service 2>/dev/null)
+    echo "🔧 Systemd service: $service_status"
+  fi
+  
+  # Check daemon process
+  if pgrep -f 'emacs.*--daemon' >/dev/null; then
+    echo "🟢 Daemon process: running"
+    local pid=$(pgrep -f 'emacs.*--daemon')
+    echo "📋 PID: $pid"
+  else
+    echo "🔴 Daemon process: not running"
+  fi
+  
+  # Check if client can connect
+  if command -v emacsclient >/dev/null 2>&1; then
+    if emacsclient -e 't' >/dev/null 2>&1; then
+      echo "🟢 Client connection: OK"
+    else
+      echo "🔴 Client connection: failed"
+    fi
+  fi
+}
+
+emacs-kill() {
+  echo "💀 Stopping Emacs daemon..."
+  
+  # Try graceful shutdown first
+  if command -v emacsclient >/dev/null 2>&1; then
+    echo "🤝 Attempting graceful shutdown..."
+    if emacsclient -e '(kill-emacs)' >/dev/null 2>&1; then
+      echo "✅ Daemon stopped gracefully"
+      return 0
+    fi
+  fi
+  
+  # Try systemd service
+  if systemctl --user is-active emacs.service >/dev/null 2>&1; then
+    echo "🔧 Stopping systemd service..."
+    systemctl --user stop emacs.service
+    echo "✅ Service stopped"
+    return 0
+  fi
+  
+  # Force kill as last resort
+  echo "⚡ Force killing daemon process..."
+  if pkill -f 'emacs.*--daemon'; then
+    echo "✅ Daemon process killed"
+  else
+    echo "❌ No daemon process found"
+  fi
+}
+
+# Dependency checking and installation utilities
+check-dependencies() {
+  echo "🔍 Checking system dependencies for literate config..."
+  
+  local missing_tools=()
+  local missing_zsh_plugins=()
+  
+  # Essential tools
+  local essential_tools=(git emacs zsh make curl)
+  for tool in "${essential_tools[@]}"; do
+    if ! command -v "$tool" >/dev/null 2>&1; then
+      missing_tools+=("$tool")
+    fi
+  done
+  
+  # Optional but recommended tools
+  local optional_tools=(fzf tmux yt-dlp gallery-dl direnv uv)
+  for tool in "${optional_tools[@]}"; do
+    if ! command -v "$tool" >/dev/null 2>&1; then
+      missing_tools+=("$tool (optional)")
+    fi
+  done
+  
+  # Zsh plugins
+  if [[ -d "$ZSH" ]]; then
+    [[ ! -d "$ZSH/custom/plugins/zsh-autosuggestions" ]] && missing_zsh_plugins+=("zsh-autosuggestions")
+    [[ ! -d "$ZSH/custom/plugins/zsh-syntax-highlighting" ]] && missing_zsh_plugins+=("zsh-syntax-highlighting")
+    [[ ! -d "$ZSH/custom/themes/powerlevel10k" ]] && missing_zsh_plugins+=("powerlevel10k")
+  fi
+  
+  # Report findings
+  if [[ ${#missing_tools[@]} -eq 0 && ${#missing_zsh_plugins[@]} -eq 0 ]]; then
+    echo "✅ All dependencies are installed!"
+  else
+    if [[ ${#missing_tools[@]} -gt 0 ]]; then
+      echo "⚠️  Missing tools: ${missing_tools[*]}"
+    fi
+    if [[ ${#missing_zsh_plugins[@]} -gt 0 ]]; then
+      echo "⚠️  Missing zsh plugins: ${missing_zsh_plugins[*]}"
+    fi
+    echo ""
+    echo "💡 Run 'install-dependencies' to install missing components"
+  fi
+}
+
+install-dependencies() {
+  echo "🔧 Installing missing dependencies..."
+  
+  # Install system packages
+  local apt_packages=()
+  ! command -v git >/dev/null 2>&1 && apt_packages+=(git)
+  ! command -v emacs >/dev/null 2>&1 && apt_packages+=(emacs)
+  ! command -v zsh >/dev/null 2>&1 && apt_packages+=(zsh)
+  ! command -v make >/dev/null 2>&1 && apt_packages+=(make)
+  ! command -v curl >/dev/null 2>&1 && apt_packages+=(curl)
+  ! command -v fzf >/dev/null 2>&1 && apt_packages+=(fzf)
+  ! command -v tmux >/dev/null 2>&1 && apt_packages+=(tmux)
+  ! command -v direnv >/dev/null 2>&1 && apt_packages+=(direnv)
+  
+  if [[ ${#apt_packages[@]} -gt 0 ]]; then
+    echo "📦 Installing system packages: ${apt_packages[*]}"
+    sudo apt update && sudo apt install -y "${apt_packages[@]}"
+  fi
+  
+  # Install Oh My Zsh if not present
+  if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
+    echo "📦 Installing Oh My Zsh..."
+    sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+    export ZSH="$HOME/.oh-my-zsh"
+  fi
+  
+  # Install Zsh plugins
+  if [[ -d "$ZSH" ]]; then
+    if [[ ! -d "$ZSH/custom/plugins/zsh-autosuggestions" ]]; then
+      echo "📦 Installing zsh-autosuggestions..."
+      git clone https://github.com/zsh-users/zsh-autosuggestions "$ZSH/custom/plugins/zsh-autosuggestions"
+    fi
+    
+    if [[ ! -d "$ZSH/custom/plugins/zsh-syntax-highlighting" ]]; then
+      echo "📦 Installing zsh-syntax-highlighting..."
+      git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "$ZSH/custom/plugins/zsh-syntax-highlighting"
+    fi
+    
+    if [[ ! -d "$ZSH/custom/themes/powerlevel10k" ]]; then
+      echo "📦 Installing powerlevel10k theme..."
+      git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$ZSH/custom/themes/powerlevel10k"
+    fi
+  fi
+  
+  # Install Python tools
+  if command -v pip >/dev/null 2>&1; then
+    ! command -v yt-dlp >/dev/null 2>&1 && pip install --user yt-dlp
+    ! command -v gallery-dl >/dev/null 2>&1 && pip install --user gallery-dl
+  fi
+  
+  # Install uv (Python package manager)
+  if ! command -v uv >/dev/null 2>&1; then
+    echo "📦 Installing uv..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+  fi
+  
+  echo "✅ Dependency installation completed!"
+  echo "🔄 Please restart your terminal or run 'source ~/.zshrc' to apply changes"
+}
+
+setup-literate-config() {
+  echo "🚀 Setting up literate configuration environment..."
+  
+  # Check current directory
+  if [[ ! -f "$(pwd)/Makefile" ]] || [[ ! -f "$(pwd)/doom-config.org" ]]; then
+    echo "❌ Please run this from the literate-config directory"
+    return 1
+  fi
+  
+  # Install dependencies
+  install-dependencies
+  
+  # Ask user about dotfiles setup
+  echo ""
+  echo "🔗 Dotfiles Management Setup:"
+  echo "1) Basic backup system (current)"
+  echo "2) Enhanced dotfiles with symlinks (recommended)"
+  echo -n "Choose setup method (1-2): "
+  read -r choice
+  
+  case $choice in
+    1)
+      echo "📦 Setting up basic backup system..."
+      config-backup
+      ;;
+    2)
+      echo "🔗 Setting up enhanced dotfiles system..."
+      config-init-dotfiles
+      echo ""
+      echo "💡 Run 'make' to generate configs, then 'config-sync-to-dotfiles' to sync"
+      ;;
+    *)
+      echo "❌ Invalid choice, using basic backup system..."
+      config-backup
+      ;;
+  esac
+  
+  # Validate current setup
+  echo "🔍 Validating setup..."
+  validate-zsh-config
+  
+  if command -v doom >/dev/null 2>&1 || [[ -x "$HOME/.config/emacs/bin/doom" ]]; then
+    validate-doom-config
+  else
+    echo "⚠️  Doom Emacs not found. Install it first if you plan to use Emacs."
+  fi
+  
+  echo ""
+  echo "✅ Literate configuration setup completed!"
+  echo "💡 Use 'make' to tangle configurations"
+  echo "💡 Use 'config-status' to check your setup"
+  echo "💡 Use 'SPC r d' in Emacs to reload with the enhanced function"
+}
+
+# Enhanced reload workflow that integrates with dotfiles
+config-enhanced-reload() {
+  echo "🚀 Enhanced configuration reload with dotfiles integration..."
+  
+  local dotfiles_dir="$HOME/.dotfiles"
+  local config_source="$HOME/org/literate-config"
+  
+  # Step 1: Backup current state
+  echo "📦 Creating backup..."
+  config-backup
+  
+  # Step 2: Generate new configs
+  echo "🔧 Generating configurations..."
+  cd "$config_source"
+  make
+  
+  # Step 3: Handle dotfiles integration
+  if [[ -d "$dotfiles_dir/.git" ]]; then
+    echo "🔗 Syncing to dotfiles repository..."
+    config-sync-to-dotfiles
+    echo "🔗 Recreating symlinks..."
+    config-create-symlinks
+  else
+    echo "ℹ️  No dotfiles repository found (using direct file management)"
+  fi
+  
+  # Step 4: Validate
+  echo "🔍 Validating new configuration..."
+  if validate-zsh-config; then
+    echo "✅ Zsh configuration validated"
+  else
+    echo "❌ Zsh validation failed"
+    return 1
+  fi
+  
+  if command -v doom >/dev/null 2>&1 || [[ -x "$HOME/.config/emacs/bin/doom" ]]; then
+    if validate-doom-config; then
+      echo "✅ Doom configuration validated"
+    else
+      echo "❌ Doom validation failed"
+      return 1
+    fi
+  fi
+  
+  echo "✅ Enhanced reload completed successfully!"
+  echo "🔄 Reload your shell: source ~/.zshrc or restart terminal"
 }
 
 #+end_src
