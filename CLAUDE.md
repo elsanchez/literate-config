@@ -258,7 +258,7 @@ If configuration deployment fails:
 ### Dotfiles-Based Workflow (Enhanced)
 1. Set up dotfiles system: `config-init-dotfiles`
 2. Edit `.org` files in literate-config repository
-3. Generate configs: `make`
+3. Generate configs: `make all-safe`
 4. Sync to dotfiles: `config-sync-to-dotfiles`
 5. Configurations are automatically symlinked to `~/.dotfiles/`
 6. All changes are git-versioned in dotfiles repository

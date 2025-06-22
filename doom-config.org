@@ -596,7 +596,7 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
       (elsanchez/backup-configs)
 
       ;; Step 2: Tangle and sync
-      (let ((cmd (format "make && %s sync" doom-bin))
+      (let ((cmd (format "make all-safe && %s sync" doom-bin))
             (default-directory (expand-file-name config-dir)))
         
         (message "🔧 Running: %s" cmd)

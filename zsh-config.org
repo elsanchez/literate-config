@@ -1082,7 +1082,7 @@ setup-literate-config() {
       echo "🔗 Setting up enhanced dotfiles system..."
       config-init-dotfiles
       echo ""
-      echo "💡 Run 'make' to generate configs, then 'config-sync-to-dotfiles' to sync"
+      echo "💡 Run 'make all-safe' to generate configs, then 'config-sync-to-dotfiles' to sync"
       ;;
     *)
       echo "❌ Invalid choice, using basic backup system..."
@@ -1102,7 +1102,7 @@ setup-literate-config() {
   
   echo ""
   echo "✅ Literate configuration setup completed!"
-  echo "💡 Use 'make' to tangle configurations"
+  echo "💡 Use 'make all-safe' to tangle configurations"
   echo "💡 Use 'config-status' to check your setup"
   echo "💡 Use 'SPC r d' in Emacs to reload with the enhanced function"
 }
@@ -1121,7 +1121,7 @@ config-enhanced-reload() {
   # Step 2: Generate new configs
   echo "🔧 Generating configurations..."
   cd "$config_source"
-  make
+  make all-safe
   
   # Step 3: Handle dotfiles integration
   if [[ -d "$dotfiles_dir/.git" ]]; then
