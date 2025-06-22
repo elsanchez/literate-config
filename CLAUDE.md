@@ -11,6 +11,13 @@ This is a literate configuration repository that uses Org-mode to document and g
 
 The repository follows a literate programming approach where configuration is documented in `.org` files and "tangled" to generate actual config files.
 
+## AI Integration
+
+The configuration includes **claudemacs** integration for AI assistance directly within Emacs:
+- Uses `cpoile/claudemacs` package for Claude AI integration
+- Secret Service integration for secure API key management
+- Keybindings under `SPC c` prefix for AI operations
+
 ## Essential Commands
 
 ### Building/Tangling Configurations
@@ -141,6 +148,9 @@ setup-literate-config  # This will install dependencies and setup everything
 
 ### Key Components
 - **doom-config.org**: Contains `init.el`, `config.el`, `packages.el`, and `custom.el` sections
+  - LSP and direnv enabled for development
+  - claudemacs for AI integration (replaces previous claude-code packages)
+  - Format-on-save enabled with apheleia
 - **zsh-config.org**: Full Zsh setup with Oh My Zsh, powerlevel10k, aliases, functions, and utilities
 - **scripts.org**: Utility scripts like `focus_or_launch.sh` for window management
 
@@ -293,6 +303,15 @@ doom-stage-config  # Stage for testing
 doom-rollback      # Rollback if needed
 ```
 
+### AI Integration (claudemacs)
+```bash
+# From Emacs
+SPC c c          # Start Claude chat
+SPC c r          # Ask Claude about region
+SPC c b          # Ask Claude about buffer
+SPC c h          # Claude help
+```
+
 ### Emergency Recovery
 ```bash
 # If Emacs won't start after config change
@@ -315,4 +334,12 @@ This repository includes comprehensive reference materials:
 - **`CHEAT_CARD.md`** - Printable cheat card format
 - **`CLAUDE.md`** - This comprehensive guide
 
+### Key Maps and Documentation Guidelines
+- Siempre que se agregen, modifiquen o eliminen los key maps documentalo en el archivo KEYBINDINGS_CHEATSHEET.md y CHEAT_CARD.md
+- **Recuerda generar un commmit message y preguntar si se quiere publicar siempre tras finalizar los cambios**
+
 For quick lookup during development, refer to these files or keep the cheat card handy.
+
+### Project-Specific Memories
+
+- Asegurate de que siempre se sincronicen los repositorios (git push) tanto origin como gitlab del proyecto

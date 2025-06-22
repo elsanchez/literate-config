@@ -20,14 +20,13 @@
 | `SPC r e d` | `elsanchez/restart-daemon-only` | Restart daemon only (no frame) |
 | `SPC r e f` | `elsanchez/open-new-frame` | Open new Emacs frame |
 
-### **🤖 Claude Code Integration**
+### **🤖 Claudemacs AI Integration**
 | Keybinding | Command | Description |
 |------------|---------|-------------|
-| `SPC a c` | `claude-chat` | Claude chat in popup |
-| `SPC a r` | `claude-code-region` | Ask Claude about selected region |
-| `SPC a b` | `claude-code-buffer` | Ask Claude about current buffer |
-| `SPC a f` | `claude-code-file` | Ask Claude about a file |
-| `SPC a F` | `claude-code-fix-region` | Fix selected region with Claude |
+| `SPC c c` | `claudemacs-chat` | **Start claudemacs chat session** |
+| `SPC c r` | `claudemacs-region` | Send selected region to Claude |
+| `SPC c b` | `claudemacs-buffer` | Send entire buffer to Claude |
+| `SPC c h` | `claudemacs-help` | Show claudemacs help and documentation |
 
 ---
 

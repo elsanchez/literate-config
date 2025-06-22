@@ -11,6 +11,10 @@
 │ SPC r e r       │ Smart daemon restart (a/m/r/s)              │
 │ SPC r e a       │ Auto restart daemon                          │
 │ SPC r e f       │ Open new frame                               │
+│ SPC c c         │ Claudemacs: Start chat                       │
+│ SPC c r         │ Claudemacs: Ask about region                 │
+│ SPC c b         │ Claudemacs: Ask about buffer                 │
+│ SPC c h         │ Claudemacs: Help                             │
 └─────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────┐
