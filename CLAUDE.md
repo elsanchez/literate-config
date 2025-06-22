@@ -25,11 +25,32 @@ The configuration includes **claudemacs** integration for AI assistance directly
 # Tangle all .org files to generate configs
 make
 
+# Tangle with automatic backup (recommended)
+make all-safe
+
 # Tangle only scripts
 make scripts
 
 # Clean generated files
 make clean
+```
+
+### Backup Management (Makefile)
+```bash
+# Create backup of current configurations
+make backup
+
+# List available backups
+make list-backups
+
+# Show restore instructions
+make restore-backup
+
+# Clean old backups (keep last 10)
+make clean-backups
+
+# Get help on all available targets
+make help
 ```
 
 ### Configuration Management (Enhanced)
@@ -110,6 +131,9 @@ emacs-kill
 
 ### After Making Changes
 ```bash
+# From Makefile (recommended for safety)
+make all-safe && doom sync   # Backup + tangle + sync
+
 # Enhanced reload with testing options
 # In Emacs: SPC r d (interactive menu: test, stage, direct, cancel)
 
@@ -126,7 +150,7 @@ emacs-kill
 # SPC r e d - Restart daemon only
 # SPC r e f - Open new frame
 
-# Manual reload
+# Manual reload (traditional)
 make && doom sync
 ```
 
@@ -157,9 +181,11 @@ setup-literate-config  # This will install dependencies and setup everything
 ### Enhanced Features
 
 #### Backup System
-- Automatic git-based backup before configuration changes
-- Timestamped backups with easy restoration
-- Interactive backup selection with fzf
+- **Makefile Integration**: Automatic backups via `make all-safe` or `make backup`
+- **Emacs Integration**: Backup functions accessible via `SPC r d`
+- Git-based versioning with timestamped commits
+- Easy restoration with `make list-backups` and `make restore-backup`
+- Backup cleanup with `make clean-backups`
 
 #### Dotfiles Management (Enhanced)
 - Optional symlink-based dotfiles repository at `~/.dotfiles/`
