@@ -229,7 +229,7 @@ tmux_conf_theme_clock_style="24"
 Configuración para copiar automáticamente al portapapeles del sistema cuando se selecciona texto.
 
 #+begin_src conf
-tmux_conf_copy_to_os_clipboard=false
+tmux_conf_copy_to_os_clipboard=true
 bind -T copy-mode-vi y send -X copy-pipe-and-cancel "xclip -selection clipboard -in"
 bind -T copy-mode-vi MouseDragEnd1Pane send -X copy-pipe-and-cancel "xclip -selection clipboard -in"
 bind -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "xclip -selection clipboard -in"
