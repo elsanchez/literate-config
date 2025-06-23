@@ -1,0 +1,304 @@
+#+TITLE: Tmux Configuration
+#+AUTHOR: elsanchez
+#+DESCRIPTION: Literate configuration for tmux using oh-my-tmux
+#+PROPERTY: header-args :tangle ~/.config/tmux/tmux.conf.local
+#+STARTUP: showeverything
+
+* Tmux Configuration
+
+Esta es mi configuración de tmux basada en [[https://github.com/gpakosz/.tmux][oh-my-tmux]], un framework que proporciona una configuración robusta y personalizable para tmux.
+
+** Estructura
+
+- =~/.oh-my-tmux/.tmux.conf= - Configuración base de oh-my-tmux (no modificar)
+- =~/.config/tmux/tmux.conf.local= - Nuestras personalizaciones (generado desde este archivo)
+
+** Shell por defecto
+
+#+begin_src conf
+set-option -g default-shell /bin/zsh
+#+end_src
+
+** Configuración de bindings
+
+Preservar los bindings stock de tmux mientras se añaden bindings que no entren en conflicto.
+
+#+begin_src conf
+tmux_conf_preserve_stock_bindings=false
+#+end_src
+
+** Creación de sesiones
+
+#+begin_src conf
+tmux_conf_new_session_prompt=false
+tmux_conf_new_session_retain_current_path=false
+#+end_src
+
+** Creación de ventanas y paneles
+
+#+begin_src conf
+tmux_conf_new_window_retain_current_path=false
+tmux_conf_new_window_reconnect_ssh=false
+tmux_conf_new_pane_retain_current_path=true
+tmux_conf_new_pane_reconnect_ssh=false
+#+end_src
+
+** Configuración de display
+
+Soporte de color RGB 24-bit automático basado en la variable de entorno COLORTERM.
+
+#+begin_src conf
+tmux_conf_24b_colour=auto
+#+end_src
+
+** Tema personalizado
+
+*** Colores del tema
+
+#+begin_src conf
+tmux_conf_theme=enabled
+
+tmux_conf_theme_colour_1="#080808"    # dark gray
+tmux_conf_theme_colour_2="#303030"    # gray
+tmux_conf_theme_colour_3="#8a8a8a"    # light gray
+tmux_conf_theme_colour_4="#00afff"    # light blue
+tmux_conf_theme_colour_5="#ffff00"    # yellow
+tmux_conf_theme_colour_6="#080808"    # dark gray
+tmux_conf_theme_colour_7="#e4e4e4"    # white
+tmux_conf_theme_colour_8="#080808"    # dark gray
+tmux_conf_theme_colour_9="#ffff00"    # yellow
+tmux_conf_theme_colour_10="#ff00af"   # pink
+tmux_conf_theme_colour_11="#5fff00"   # green
+tmux_conf_theme_colour_12="#8a8a8a"   # light gray
+tmux_conf_theme_colour_13="#e4e4e4"   # white
+tmux_conf_theme_colour_14="#080808"   # dark gray
+tmux_conf_theme_colour_15="#080808"   # dark gray
+tmux_conf_theme_colour_16="#d70000"   # red
+tmux_conf_theme_colour_17="#e4e4e4"   # white
+#+end_src
+
+*** Estilo de ventanas
+
+#+begin_src conf
+tmux_conf_theme_window_fg="default"
+tmux_conf_theme_window_bg="default"
+#+end_src
+
+*** Configuración de paneles
+
+#+begin_src conf
+tmux_conf_theme_highlight_focused_pane=false
+tmux_conf_theme_focused_pane_bg="$tmux_conf_theme_colour_2"
+tmux_conf_theme_pane_border_style=thin
+tmux_conf_theme_pane_border="$tmux_conf_theme_colour_2"
+tmux_conf_theme_pane_active_border="$tmux_conf_theme_colour_4"
+%if #{>=:#{version},3.2}
+tmux_conf_theme_pane_active_border="#{?pane_in_mode,$tmux_conf_theme_colour_9,#{?synchronize-panes,$tmux_conf_theme_colour_16,$tmux_conf_theme_colour_4}}"
+%endif
+tmux_conf_theme_pane_indicator="$tmux_conf_theme_colour_4"
+tmux_conf_theme_pane_active_indicator="$tmux_conf_theme_colour_4"
+#+end_src
+
+*** Línea de estado
+
+#+begin_src conf
+tmux_conf_theme_message_fg="$tmux_conf_theme_colour_1"
+tmux_conf_theme_message_bg="$tmux_conf_theme_colour_5"
+tmux_conf_theme_message_attr="bold"
+
+tmux_conf_theme_message_command_fg="$tmux_conf_theme_colour_5"
+tmux_conf_theme_message_command_bg="$tmux_conf_theme_colour_1"
+tmux_conf_theme_message_command_attr="bold"
+
+tmux_conf_theme_mode_fg="$tmux_conf_theme_colour_1"
+tmux_conf_theme_mode_bg="$tmux_conf_theme_colour_5"
+tmux_conf_theme_mode_attr="bold"
+
+tmux_conf_theme_status_fg="$tmux_conf_theme_colour_3"
+tmux_conf_theme_status_bg="$tmux_conf_theme_colour_1"
+tmux_conf_theme_status_attr="none"
+#+end_src
+
+*** Título de terminal
+
+#+begin_src conf
+tmux_conf_theme_terminal_title="#h ❐ #S ● #I #W"
+#+end_src
+
+*** Estado de ventanas
+
+#+begin_src conf
+tmux_conf_theme_window_status_fg="$tmux_conf_theme_colour_3"
+tmux_conf_theme_window_status_bg="$tmux_conf_theme_colour_1"
+tmux_conf_theme_window_status_attr="none"
+tmux_conf_theme_window_status_format="#I #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
+
+tmux_conf_theme_window_status_current_fg="$tmux_conf_theme_colour_1"
+tmux_conf_theme_window_status_current_bg="$tmux_conf_theme_colour_4"
+tmux_conf_theme_window_status_current_attr="bold"
+tmux_conf_theme_window_status_current_format="#I #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
+
+tmux_conf_theme_window_status_activity_fg="default"
+tmux_conf_theme_window_status_activity_bg="default"
+tmux_conf_theme_window_status_activity_attr="underscore"
+
+tmux_conf_theme_window_status_bell_fg="$tmux_conf_theme_colour_5"
+tmux_conf_theme_window_status_bell_bg="default"
+tmux_conf_theme_window_status_bell_attr="blink,bold"
+
+tmux_conf_theme_window_status_last_fg="$tmux_conf_theme_colour_4"
+tmux_conf_theme_window_status_last_bg="$tmux_conf_theme_colour_2"
+tmux_conf_theme_window_status_last_attr="none"
+#+end_src
+
+*** Separadores de secciones
+
+#+begin_src conf
+tmux_conf_theme_left_separator_main=""
+tmux_conf_theme_left_separator_sub="|"
+tmux_conf_theme_right_separator_main=""
+tmux_conf_theme_right_separator_sub="|"
+#+end_src
+
+*** Contenido de la barra de estado
+
+#+begin_src conf
+tmux_conf_theme_status_left=" ❐ #S | ↑#{?uptime_y, #{uptime_y}y,}#{?uptime_d, #{uptime_d}d,}#{?uptime_h, #{uptime_h}h,}#{?uptime_m, #{uptime_m}m,} "
+tmux_conf_theme_status_right=" #{prefix}#{mouse}#{pairing}#{synchronized}#{?battery_status,#{battery_status},}#{?battery_bar, #{battery_bar},}#{?battery_percentage, #{battery_percentage},} , %R , %d %b | #{username}#{root} | #{hostname} "
+
+tmux_conf_theme_status_left_fg="$tmux_conf_theme_colour_6,$tmux_conf_theme_colour_7,$tmux_conf_theme_colour_8"
+tmux_conf_theme_status_left_bg="$tmux_conf_theme_colour_9,$tmux_conf_theme_colour_10,$tmux_conf_theme_colour_11"
+tmux_conf_theme_status_left_attr="bold,none,none"
+
+tmux_conf_theme_status_right_fg="$tmux_conf_theme_colour_12,$tmux_conf_theme_colour_13,$tmux_conf_theme_colour_14"
+tmux_conf_theme_status_right_bg="$tmux_conf_theme_colour_15,$tmux_conf_theme_colour_16,$tmux_conf_theme_colour_17"
+tmux_conf_theme_status_right_attr="none,none,bold"
+#+end_src
+
+*** Indicadores de estado
+
+#+begin_src conf
+tmux_conf_theme_pairing="⚇"                 # U+2687
+tmux_conf_theme_pairing_fg="none"
+tmux_conf_theme_pairing_bg="none"
+tmux_conf_theme_pairing_attr="none"
+
+tmux_conf_theme_prefix="⌨"                  # U+2328
+tmux_conf_theme_prefix_fg="none"
+tmux_conf_theme_prefix_bg="none"
+tmux_conf_theme_prefix_attr="none"
+
+tmux_conf_theme_mouse="↗"                   # U+2197
+tmux_conf_theme_mouse_fg="none"
+tmux_conf_theme_mouse_bg="none"
+tmux_conf_theme_mouse_attr="none"
+
+tmux_conf_theme_root="!"
+tmux_conf_theme_root_fg="none"
+tmux_conf_theme_root_bg="none"
+tmux_conf_theme_root_attr="bold,blink"
+
+tmux_conf_theme_synchronized="⚏"            # U+268F
+tmux_conf_theme_synchronized_fg="none"
+tmux_conf_theme_synchronized_bg="none"
+tmux_conf_theme_synchronized_attr="none"
+#+end_src
+
+** Configuración de batería
+
+#+begin_src conf
+tmux_conf_battery_bar_symbol_full="◼"
+tmux_conf_battery_bar_symbol_empty="◻"
+tmux_conf_battery_bar_length="auto"
+tmux_conf_battery_bar_palette="gradient"
+tmux_conf_battery_hbar_palette="gradient"
+tmux_conf_battery_vbar_palette="gradient"
+tmux_conf_battery_status_charging="↑"       # U+2191
+tmux_conf_battery_status_discharging="↓"    # U+2193
+#+end_src
+
+** Configuración de reloj
+
+#+begin_src conf
+tmux_conf_theme_clock_colour="$tmux_conf_theme_colour_4"
+tmux_conf_theme_clock_style="24"
+#+end_src
+
+** Portapapeles
+
+Configuración para copiar automáticamente al portapapeles del sistema cuando se selecciona texto.
+
+#+begin_src conf
+tmux_conf_copy_to_os_clipboard=false
+bind -T copy-mode-vi y send -X copy-pipe-and-cancel "xclip -selection clipboard -in"
+bind -T copy-mode-vi MouseDragEnd1Pane send -X copy-pipe-and-cancel "xclip -selection clipboard -in"
+bind -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "xclip -selection clipboard -in"
+#+end_src
+
+** URLScan
+
+#+begin_src conf
+tmux_conf_urlscan_options="--compact --dedupe"
+#+end_src
+
+** Personalizaciones de usuario
+
+*** Configuración básica
+
+#+begin_src conf
+set -g history-limit 10000
+set -g mouse on
+set -g status-keys vi
+set -g mode-keys vi
+#+end_src
+
+*** Cambio de prefix
+
+Cambiar el prefix de C-b a C-a.
+
+#+begin_src conf
+set -gu prefix2
+unbind C-a
+unbind C-b
+set -g prefix C-a
+bind C-a send-prefix
+#+end_src
+
+** Configuración de TPM (Tmux Plugin Manager)
+
+*** Configuración de la barra de estado personalizada
+
+#+begin_src conf
+set -g status-interval 30
+set -g status-right '#(~/.config/tmux/tmux-status-info.sh) | %Y-%m-%d %H:%M'
+#+end_src
+
+*** Configuración de TPM
+
+#+begin_src conf
+tmux_conf_update_plugins_on_launch=true
+tmux_conf_update_plugins_on_reload=true
+tmux_conf_uninstall_plugins_on_reload=true
+#+end_src
+
+*** Plugins instalados
+
+#+begin_src conf
+set -g @plugin 'tmux-plugins/tpm'
+set -g @plugin 'tmux-plugins/tmux-sensible'
+set -g @plugin 'tmux-plugins/tmux-resurrect'
+set -g @plugin 'tmux-plugins/tmux-continuum'
+set -g @plugin 'tmux-plugins/tmux-prefix-highlight'
+set -g @plugin 'tmux-plugins/tmux-yank'
+set -g @plugin 'tmux-plugins/tmux-open'
+set -g @plugin 'tmux-plugins/tmux-copycat'
+#+end_src
+
+*** Configuración de plugins
+
+#+begin_src conf
+set -g @continuum-restore 'on'
+set -g @resurrect-capture-pane-contents 'on'
+
+run '~/.config/tmux/plugins/tpm/tpm'
+#+end_src

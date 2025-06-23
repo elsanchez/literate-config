@@ -18,6 +18,10 @@ This configuration includes **claudemacs** integration for AI assistance directl
   - 🤖 **claudemacs integration** for AI assistance
   - 🔧 **Format-on-save** with apheleia
 - `zsh-config.org`: My Zsh shell configuration (replaces `.zshrc`)
+- `tmux-config.org`: My tmux configuration using oh-my-tmux framework
+  - 🎨 **Custom theme and colors**
+  - 🔌 **Plugin management with TPM**
+  - 📋 **Advanced clipboard integration**
 - `scripts.org`: Utility scripts and functions
 
 ## 🚀 Usage

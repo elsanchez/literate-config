@@ -31,12 +31,13 @@ scripts:
 backup: backup-init
 	@echo "💾 Creating configuration backup..."
 	@mkdir -p $(BACKUP_DIR)
-	@if [ -f ~/.config/doom/init.el ] || [ -f ~/.config/doom/config.el ] || [ -f ~/.zshrc ]; then \
+	@if [ -f ~/.config/doom/init.el ] || [ -f ~/.config/doom/config.el ] || [ -f ~/.zshrc ] || [ -f ~/.config/tmux/tmux.conf.local ]; then \
 		cp -f ~/.config/doom/init.el $(BACKUP_DIR)/ 2>/dev/null || true; \
 		cp -f ~/.config/doom/config.el $(BACKUP_DIR)/ 2>/dev/null || true; \
 		cp -f ~/.config/doom/packages.el $(BACKUP_DIR)/ 2>/dev/null || true; \
 		cp -f ~/.config/doom/custom.el $(BACKUP_DIR)/ 2>/dev/null || true; \
 		cp -f ~/.zshrc $(BACKUP_DIR)/ 2>/dev/null || true; \
+		cp -f ~/.config/tmux/tmux.conf.local $(BACKUP_DIR)/ 2>/dev/null || true; \
 		mkdir -p $(BACKUP_DIR)/scripts 2>/dev/null || true; \
 		cp -f ~/.local/bin/*.sh $(BACKUP_DIR)/scripts/ 2>/dev/null || true; \
 		cd $(BACKUP_DIR) && git add . && git commit -m "Backup $(TIMESTAMP)" >/dev/null 2>&1 || true; \
@@ -86,7 +87,7 @@ clean-backups:
 
 clean:
 	@echo "🧹 Cleaning generated files..."
-	@rm -f ~/.config/doom/init.el ~/.config/doom/config.el ~/.config/doom/packages.el ~/.config/doom/custom.el ~/.zshrc ~/.local/bin/*.sh || true
+	@rm -f ~/.config/doom/init.el ~/.config/doom/config.el ~/.config/doom/packages.el ~/.config/doom/custom.el ~/.zshrc ~/.config/tmux/tmux.conf.local ~/.local/bin/*.sh || true
 	@echo "✅ Clean completed."
 
 # Help and information
