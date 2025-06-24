@@ -1,7 +1,7 @@
 * Doom Emacs Configuration
 This is a literate configuration combining your `init.el`, `config.el`, `packages.el`, and `custom.el`.
 
-** COMMENT init.el
+** init.el
 #+PROPERTY: header-args :results none
 #+BEGIN_SRC emacs-lisp :tangle ~/.config/doom/init.el
 ;;; init.el -*- lexical-binding: t; -*-
