@@ -570,7 +570,7 @@ bind C-a send-prefix
 
 #+begin_src conf
 set -g status-interval 30
-set -g status-right '#(~/.tmux-status-info.sh) | %Y-%m-%d %H:%M'
+set -g status-right '%Y-%m-%d %H:%M'
 #+end_src
 
 **** Configuración de TPM
