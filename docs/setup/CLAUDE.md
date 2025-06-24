@@ -17,6 +17,8 @@ The configuration includes **claudemacs** integration for AI assistance directly
 - Uses `cpoile/claudemacs` package for Claude AI integration
 - Secret Service integration for secure API key management
 - Keybindings under `SPC c` prefix for AI operations
+- **Cross-platform compatibility**: All Claude-related functions include existence checks for seamless operation on systems without Claude packages
+- Supports fallback to alternative Claude packages (`claude-code`, `emacs-claude-code`) with conditional loading
 
 ## Essential Commands
 
@@ -173,7 +175,8 @@ setup-literate-config  # This will install dependencies and setup everything
 ### Key Components
 - **doom-config.org**: Contains `init.el`, `config.el`, `packages.el`, and `custom.el` sections
   - LSP and direnv enabled for development
-  - claudemacs for AI integration (replaces previous claude-code packages)
+  - claudemacs for AI integration with conditional loading (compatible with macOS/systems without Claude)
+  - Graceful fallback to alternative Claude packages when available
   - Format-on-save enabled with apheleia
 - **zsh-config.org**: Full Zsh setup with Oh My Zsh, powerlevel10k, aliases, functions, and utilities
 - **scripts.org**: Utility scripts like `focus_or_launch.sh` for window management
@@ -284,6 +287,23 @@ If configuration deployment fails:
 - Validates parentheses and basic structure
 - Can be used on individual files
 
+## Cross-Platform Compatibility
+
+### macOS Support
+The configuration is designed to work seamlessly across different platforms, including macOS systems where Claude packages may not be available:
+
+- **Conditional Loading**: All Claude-related packages (`claudemacs`, `claude-code`, `emacs-claude-code`) use existence checks
+- **Function Validation**: Keybindings and function calls are wrapped with `fboundp` and `boundp` checks
+- **Graceful Degradation**: Systems without Claude packages will load all other functionality normally
+- **No Breaking Errors**: The `init.el` generation will succeed even without AI packages installed
+
+### Validated Functions
+The following functions include existence checks for cross-platform compatibility:
+- `claudemacs-chat`, `claudemacs-region`, `claudemacs-buffer`, `claudemacs-help`
+- `claude-chat`, `claude-code-region`, `claude-code-buffer`, `claude-code-file`, `claude-code-fix-region`
+- `ecc-auto-periodical-toggle`, `--ecc-vterm-utils-enable-yank-advice`
+- Variables: `--ecc-auto-response-responses`, `ecc-auto-periodical-commands`
+
 ## Troubleshooting
 
 ### Common Issues
@@ -291,6 +311,8 @@ If configuration deployment fails:
 - **Powerlevel10k not loading**: The config now auto-detects and provides installation instructions
 - **Zsh plugin errors**: Enhanced config checks for plugin availability before loading
 - **Configuration corruption**: Use `config-restore` to rollback to working version
+- **Claude packages not available (macOS)**: All Claude-related functions include existence checks and fail gracefully
+- **init.el generation failures**: Fixed with conditional loading of all AI-related packages and functions
 
 ### Recovery Commands
 ```bash
@@ -331,11 +353,14 @@ doom-rollback      # Rollback if needed
 
 ### AI Integration (claudemacs)
 ```bash
-# From Emacs
+# From Emacs (when claudemacs is available)
 SPC c c          # Start Claude chat
 SPC c r          # Ask Claude about region
 SPC c b          # Ask Claude about buffer
 SPC c h          # Claude help
+
+# Note: Keybindings only appear when Claude packages are installed
+# On systems without Claude, the configuration loads cleanly without errors
 ```
 
 ### Emergency Recovery

@@ -812,20 +812,27 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
        (message "💡 You can use Claude Code directly from terminal with 'claude'"))))
 
 ;; COMMENTED OUT: emacs-claude-code specific configurations - Using claudemacs instead
-(setq --ecc-auto-response-responses
-      '((:y/n . "1")
-        (:y/y/n . "2")
-        (:waiting . "/user:auto")
-        (:initial-waiting . "/user:understand-guidelines")))
+(when (boundp '--ecc-auto-response-responses)
+  (setq --ecc-auto-response-responses
+        '((:y/n . "1")
+          (:y/y/n . "2")
+          (:waiting . "/user:auto")
+          (:initial-waiting . "/user:understand-guidelines"))))
 
-(ecc-auto-periodical-toggle)  ; Function not available - commented out
+;; Only call if function exists
+(when (fboundp 'ecc-auto-periodical-toggle)
+  (ecc-auto-periodical-toggle))
 
-(setq --ecc-auto-response-periodic-interval 300
-      ecc-auto-periodical-commands
-      '((10 . "/compact")
-        (20 . "/user:auto")))
+(when (and (boundp '--ecc-auto-response-periodic-interval)
+           (boundp 'ecc-auto-periodical-commands))
+  (setq --ecc-auto-response-periodic-interval 300
+        ecc-auto-periodical-commands
+        '((10 . "/compact")
+          (20 . "/user:auto"))))
 
-;; ;; (--ecc-vterm-utils-enable-yank-advice)  ; Function not available - commented out
+;; Only call if function exists
+(when (fboundp '--ecc-vterm-utils-enable-yank-advice)
+  (--ecc-vterm-utils-enable-yank-advice))
 
 ;; COMMENTED OUT: claude-code config - Using claudemacs instead
 (use-package! claude-code
@@ -834,14 +841,20 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
   (setq claude-code-default-system-prompt
         "You are a senior software engineer helping improve and refactor code.
  Respond only with code or clear suggestions. Avoid vague or generic replies."))
-;;
-(map! :leader
-      (:prefix ("ai" . "AI / Claude")
-       :desc "Claude: chat in popup" "c" #'claude-chat
-       :desc "Claude: ask region"   "r" #'claude-code-region
-       :desc "Claude: ask buffer"   "b" #'claude-code-buffer
-       :desc "Claude: ask file"     "f" #'claude-code-file
-       :desc "Claude: fix region"   "F" #'claude-code-fix-region))
+
+;; Only setup keybindings if functions are available
+(when (and (fboundp 'claude-chat)
+           (fboundp 'claude-code-region)
+           (fboundp 'claude-code-buffer)
+           (fboundp 'claude-code-file)
+           (fboundp 'claude-code-fix-region))
+  (map! :leader
+        (:prefix ("ai" . "AI / Claude")
+         :desc "Claude: chat in popup" "c" #'claude-chat
+         :desc "Claude: ask region"   "r" #'claude-code-region
+         :desc "Claude: ask buffer"   "b" #'claude-code-buffer
+         :desc "Claude: ask file"     "f" #'claude-code-file
+         :desc "Claude: fix region"   "F" #'claude-code-fix-region)))
 ;;
 ;; ;; Font & flicker fixes
 (set-fontset-font t 'unicode (font-spec :family "JuliaMono"))
@@ -875,13 +888,17 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
         claudemacs-temperature 0.1
         claudemacs-system-prompt "You are a helpful AI assistant integrated with Emacs. Provide clear, concise, and accurate responses.")
   
-  ;; Keybindings
-  (map! :leader
-        (:prefix ("c" . "AI / Claude")
-         :desc "Claudemacs: Start chat"    "c" #'claudemacs-chat
-         :desc "Claudemacs: Ask region"    "r" #'claudemacs-region  
-         :desc "Claudemacs: Ask buffer"    "b" #'claudemacs-buffer
-         :desc "Claudemacs: Help"          "h" #'claudemacs-help))
+  ;; Keybindings - only if functions are available
+  (when (and (fboundp 'claudemacs-chat)
+             (fboundp 'claudemacs-region)
+             (fboundp 'claudemacs-buffer)
+             (fboundp 'claudemacs-help))
+    (map! :leader
+          (:prefix ("c" . "AI / Claude")
+           :desc "Claudemacs: Start chat"    "c" #'claudemacs-chat
+           :desc "Claudemacs: Ask region"    "r" #'claudemacs-region  
+           :desc "Claudemacs: Ask buffer"    "b" #'claudemacs-buffer
+           :desc "Claudemacs: Help"          "h" #'claudemacs-help)))
   
   (message "✅ claudemacs configured with Secret Service integration"))
 
