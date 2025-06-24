@@ -1,6 +1,7 @@
 * Zsh Configuration (Literate)
 
-This is your literate Zsh setup for KDE, Doom Emacs, and powerlevel10k.
+This is your cross-platform literate Zsh setup for Doom Emacs and powerlevel10k.
+Supports Linux, macOS, and other Unix-like systems with automatic OS detection.
 
 ---
 
@@ -8,6 +9,22 @@ This is your literate Zsh setup for KDE, Doom Emacs, and powerlevel10k.
 
 #+PROPERTY: header-args :results none
 #+begin_src shell :tangle ~/.zshrc
+# OS Detection and Cross-Platform Setup
+case "$(uname -s)" in
+  Darwin*)
+    export OS_TYPE="macos"
+    ;;
+  Linux*)
+    export OS_TYPE="linux"
+    ;;
+  CYGWIN*|MINGW*|MSYS*)
+    export OS_TYPE="windows"
+    ;;
+  *)
+    export OS_TYPE="unknown"
+    ;;
+esac
+
 # Instant Prompt loading for faster startup
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
@@ -82,7 +99,7 @@ if [[ ${#missing_plugins[@]} -gt 0 ]]; then
         echo "  git clone https://github.com/zsh-users/zsh-syntax-highlighting.git \$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
         ;;
       direnv)
-        echo "  sudo apt install direnv  # or: curl -sfL https://direnv.net/install.sh | bash"
+        echo "  pi direnv  # or: curl -sfL https://direnv.net/install.sh | bash"
         ;;
       uv)
         echo "  curl -LsSf https://astral.sh/uv/install.sh | sh"
@@ -100,17 +117,70 @@ source $ZSH/oh-my-zsh.sh
 # Load Powerlevel10k configuration if available
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-# Set environment variables
+# Set environment variables (cross-platform)
 export EDITOR='emacs'
-export BROWSER='firefox'
+case "$OS_TYPE" in
+  macos)
+    export BROWSER='open'
+    ;;
+  linux)
+    export BROWSER='firefox'
+    ;;
+  *)
+    export BROWSER='firefox'
+    ;;
+esac
 
 # Setup PATH for pipx if installed
 if command -v pipx > /dev/null 2>&1; then
   export PATH="$PATH:~/.local/bin"
 fi
 
-# Setup emacs, npm, nvim environment
-export PATH="$PATH:$HOME/.config/emacs/bin:$HOME/.npm-global/bin:/opt/nvim-linux-x86_64/bin"
+# Setup emacs, npm, nvim environment (cross-platform paths)
+export PATH="$PATH:$HOME/.config/emacs/bin:$HOME/.npm-global/bin"
+
+# OS-specific PATH additions
+case "$OS_TYPE" in
+  macos)
+    # macOS specific paths
+    export PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"
+    [[ -d "/Applications/Emacs.app/Contents/MacOS/bin" ]] && export PATH="$PATH:/Applications/Emacs.app/Contents/MacOS/bin"
+    ;;
+  linux)
+    # Linux specific paths
+    [[ -d "/opt/nvim-linux-x86_64/bin" ]] && export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
+    ;;
+esac
+
+# Cross-platform aliases based on OS
+case "$OS_TYPE" in
+  macos)
+    # macOS specific aliases
+    alias pi='brew install'
+    alias pr='brew uninstall'
+    alias ps='brew search'
+    alias pu='brew update && brew upgrade'
+    alias pc='brew cleanup'
+    alias pinfo='brew info'
+    alias restart-audio='sudo killall coreaudiod'
+    # Use native macOS 'open' command for file manager
+    ;;
+  linux)
+    # Linux specific aliases
+    alias pi='sudo apt install'
+    alias pr='sudo apt remove'
+    alias ps='apt search'
+    alias pu='sudo apt update && sudo apt upgrade'
+    alias pc='sudo apt autoremove'
+    alias pinfo='apt show'
+    alias restart-audio='systemctl --user restart pipewire pipewire-pulse wireplumber || (pulseaudio -k && pulseaudio --start)'
+    alias open='xdg-open'
+    ;;
+  *)
+    # Default/unknown OS
+    echo "Unknown OS, some aliases may not work"
+    ;;
+esac
 
 # Golang environment
 if [[ -d "/usr/local/go/bin" ]]; then
@@ -129,19 +199,9 @@ alias please='sudo'
 alias cls='clear'
 
 # APT package management (short form)
-alias api='sudo apt install'
-alias apr='sudo apt remove'
-alias app='sudo apt purge'
-alias aps='apt search'
-alias apu='sudo apt update && sudo apt upgrade'
-alias apc='sudo apt autoremove'
-alias apf='sudo apt --fix-broken install'
-alias apsh='apt show'
+# Cross-platform package management aliases (moved below after OS detection)
 alias pbcopy="xsel --clipboard --input"
-alias yt='download_video'
-alias open='dolphin'
-alias via='mosh --ssh="ssh -i ~/.ssh/id_ed25519" linuxuser@107.191.55.XX'
-alias restart-audio='systemctl --user restart pipewire pipewire-pulse wireplumber || (pulseaudio -k && pulseaudio --start)'
+# Cross-platform aliases (moved below after OS detection)
 
 # General options
 setopt correct
@@ -167,64 +227,20 @@ up() {
 }
 
 # Open current directory in Dolphin
-dolphin() {
-  nohup dolphin . >/dev/null 2>&1 &
-}
-
 # Open a file quickly with Emacs
 e() {
   emacs -nw "$@"
 }
 
-download_video() {
-  local url=$1
-  local output_filename=$2
-  local output_dir=~/Downloads/videos
-  
-  if [[ -z "$url" ]]; then
-    echo "❌ Usage: download_video <url> [filename]"
-    return 1
-  fi
-  
-  mkdir -p "$output_dir"
-
-  case "$url" in
-    ,*instagram.com*|*deviantart.com*)
-      if ! command -v gallery-dl >/dev/null 2>&1; then
-        echo "❌ gallery-dl not found. Install with: pip install gallery-dl"
-        return 1
-      fi
-      cookies_file=~/Documents/cookies.instagram.txt
-      gallery-dl --cookies ${cookies_file} \
-               --output "$output_dir/${output_filename}.%(extension)s" "$url"
-      ;;
-    ,*x.com*)
-      if ! command -v yt-dlp >/dev/null 2>&1; then
-        echo "❌ yt-dlp not found. Install with: pip install yt-dlp"
-        return 1
-      fi
-      cookies_file=~/Documents/cookies.twitter.txt
-      yt-dlp --cookies ${cookies_file} -o "${output_dir}/${output_filename}.%(ext)s" "$url"
-      ;;
-    ,*)
-      if ! command -v yt-dlp >/dev/null 2>&1; then
-        echo "❌ yt-dlp not found. Install with: pip install yt-dlp"
-        return 1
-      fi
-      yt-dlp -o "${output_dir}/${output_filename}.%(ext)s" "$url"
-      ;;
-  esac
-}
-
 # Lista y selecciona una sesión tmux con fzf
 tms() {
   if ! command -v tmux >/dev/null 2>&1; then
-    echo "❌ tmux not found. Install with: sudo apt install tmux"
+    echo "❌ tmux not found. Install with: pi tmux"
     return 1
   fi
   
   if ! command -v fzf >/dev/null 2>&1; then
-    echo "❌ fzf not found. Install with: sudo apt install fzf"
+    echo "❌ fzf not found. Install with: pi fzf"
     return 1
   fi
   
@@ -241,7 +257,7 @@ tms() {
 # Crea o conecta a una sesión (por nombre o default)
 tmgo() {
   if ! command -v tmux >/dev/null 2>&1; then
-    echo "❌ tmux not found. Install with: sudo apt install tmux"
+    echo "❌ tmux not found. Install with: pi tmux"
     return 1
   fi
   
@@ -260,12 +276,12 @@ tmgo() {
 # Mata sesión desde fzf
 tmkill() {
   if ! command -v tmux >/dev/null 2>&1; then
-    echo "❌ tmux not found. Install with: sudo apt install tmux"
+    echo "❌ tmux not found. Install with: pi tmux"
     return 1
   fi
   
   if ! command -v fzf >/dev/null 2>&1; then
-    echo "❌ fzf not found. Install with: sudo apt install fzf"
+    echo "❌ fzf not found. Install with: pi fzf"
     return 1
   fi
   
@@ -518,7 +534,7 @@ config-restore() {
   fi
   
   if ! command -v fzf >/dev/null 2>&1; then
-    echo "❌ fzf required for interactive restore. Install with: sudo apt install fzf"
+    echo "❌ fzf required for interactive restore. Install with: pi fzf"
     return 1
   fi
   
@@ -803,78 +819,59 @@ doom-list-backups() {
 emacs-restart() {
   echo "🔄 Restarting Emacs daemon..."
   
-  # Check if systemd service is available and active
-  if systemctl --user is-active emacs.service >/dev/null 2>&1; then
-    echo "📋 Using systemd service..."
-    systemctl --user restart emacs.service
-    
-    # Wait a moment and check status
-    sleep 2
-    if systemctl --user is-active emacs.service >/dev/null 2>&1; then
-      echo "✅ Emacs daemon restarted successfully"
-      
-      # Offer to open new frame
-      echo -n "🖼️ Open new Emacs frame? (y/N): "
-      read -r response
-      if [[ "$response" =~ ^[Yy]$ ]]; then
-        emacs-frame
+  case "$OS_TYPE" in
+    linux)
+      # Try systemd service first on Linux
+      if command -v systemctl >/dev/null 2>&1 && systemctl --user is-active emacs.service >/dev/null 2>&1; then
+        echo "📋 Using systemd service..."
+        systemctl --user restart emacs.service
+        sleep 2
+        if systemctl --user is-active emacs.service >/dev/null 2>&1; then
+          echo "✅ Emacs daemon restarted successfully"
+        else
+          echo "❌ Systemd restart failed, trying manual restart..."
+          emacs-restart-manual
+        fi
+      else
+        echo "📋 Systemd not available, using manual restart..."
+        emacs-restart-manual
       fi
-    else
-      echo "❌ Daemon restart failed"
-      echo "💡 Check status with: systemctl --user status emacs.service"
-    fi
-  else
-    echo "⚠️ Systemd service not found or inactive"
-    echo "🔧 Trying alternative restart method..."
-    emacs-restart-alternative
+      ;;
+    macos)
+      # On macOS, use manual restart (no systemd)
+      echo "📋 Using manual restart (macOS)..."
+      emacs-restart-manual
+      ;;
+    *)
+      # Default to manual restart for unknown OS
+      echo "📋 Using manual restart (unknown OS)..."
+      emacs-restart-manual
+      ;;
+  esac
+  
+  # Offer to open new frame
+  echo -n "🖼️ Open new Emacs frame? (y/N): "
+  read -r response
+  if [[ "$response" =~ ^[Yy]$ ]]; then
+    emacs-frame
   fi
 }
 
-emacs-restart-alternative() {
-  echo "🔧 Alternative restart methods:"
-  echo "1) Kill and restart daemon"
-  echo "2) Client-based restart"
-  echo "3) Manual instructions"
-  echo -n "Choose method (1-3): "
-  read -r choice
+emacs-restart-manual() {
+  echo "💀 Stopping current daemon..."
+  pkill -f 'emacs.*--daemon' 2>/dev/null || emacsclient -e '(kill-emacs)' 2>/dev/null
+  sleep 2
   
-  case $choice in
-    1)
-      echo "💀 Killing current Emacs daemon..."
-      pkill -f 'emacs.*--daemon' 2>/dev/null
-      sleep 2
-      echo "🚀 Starting new daemon..."
-      emacs --daemon
-      sleep 3
-      if pgrep -f 'emacs.*--daemon' >/dev/null; then
-        echo "✅ Daemon restarted successfully"
-        echo -n "🖼️ Open new frame? (y/N): "
-        read -r response
-        if [[ "$response" =~ ^[Yy]$ ]]; then
-          emacs-frame
-        fi
-      else
-        echo "❌ Failed to start daemon"
-      fi
-      ;;
-    2)
-      echo "🔄 Restarting via emacsclient..."
-      emacsclient -e '(kill-emacs)' 2>/dev/null
-      sleep 2
-      emacs --daemon
-      sleep 3
-      echo "✅ Daemon restart completed"
-      ;;
-    3)
-      echo "🔧 Manual restart instructions:"
-      echo "1. Kill daemon: emacsclient -e '(kill-emacs)'"
-      echo "2. Start daemon: emacs --daemon"
-      echo "3. Open frame: emacsclient -c"
-      ;;
-    *)
-      echo "❌ Invalid choice"
-      ;;
-  esac
+  echo "🚀 Starting new daemon..."
+  emacs --daemon
+  sleep 3
+  
+  if pgrep -f 'emacs.*--daemon' >/dev/null; then
+    echo "✅ Daemon restarted successfully"
+  else
+    echo "❌ Failed to start daemon"
+    echo "💡 Try manually: emacs --daemon"
+  fi
 }
 
 emacs-frame() {
@@ -964,7 +961,7 @@ check-dependencies() {
   done
   
   # Optional but recommended tools
-  local optional_tools=(fzf tmux yt-dlp gallery-dl direnv uv)
+  local optional_tools=(fzf tmux direnv uv)
   for tool in "${optional_tools[@]}"; do
     if ! command -v "$tool" >/dev/null 2>&1; then
       missing_tools+=("$tool (optional)")
@@ -996,20 +993,36 @@ check-dependencies() {
 install-dependencies() {
   echo "🔧 Installing missing dependencies..."
   
-  # Install system packages
-  local apt_packages=()
-  ! command -v git >/dev/null 2>&1 && apt_packages+=(git)
-  ! command -v emacs >/dev/null 2>&1 && apt_packages+=(emacs)
-  ! command -v zsh >/dev/null 2>&1 && apt_packages+=(zsh)
-  ! command -v make >/dev/null 2>&1 && apt_packages+=(make)
-  ! command -v curl >/dev/null 2>&1 && apt_packages+=(curl)
-  ! command -v fzf >/dev/null 2>&1 && apt_packages+=(fzf)
-  ! command -v tmux >/dev/null 2>&1 && apt_packages+=(tmux)
-  ! command -v direnv >/dev/null 2>&1 && apt_packages+=(direnv)
+  # Install system packages based on OS
+  local packages=()
+  ! command -v git >/dev/null 2>&1 && packages+=(git)
+  ! command -v emacs >/dev/null 2>&1 && packages+=(emacs)
+  ! command -v zsh >/dev/null 2>&1 && packages+=(zsh)
+  ! command -v make >/dev/null 2>&1 && packages+=(make)
+  ! command -v curl >/dev/null 2>&1 && packages+=(curl)
+  ! command -v fzf >/dev/null 2>&1 && packages+=(fzf)
+  ! command -v tmux >/dev/null 2>&1 && packages+=(tmux)
+  ! command -v direnv >/dev/null 2>&1 && packages+=(direnv)
   
-  if [[ ${#apt_packages[@]} -gt 0 ]]; then
-    echo "📦 Installing system packages: ${apt_packages[*]}"
-    sudo apt update && sudo apt install -y "${apt_packages[@]}"
+  if [[ ${#packages[@]} -gt 0 ]]; then
+    echo "📦 Installing system packages: ${packages[*]}"
+    case "$OS_TYPE" in
+      macos)
+        if command -v brew >/dev/null 2>&1; then
+          brew install "${packages[@]}"
+        else
+          echo "❌ Homebrew not found. Please install it first:"
+          echo "   /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
+          return 1
+        fi
+        ;;
+      linux)
+        sudo apt update && sudo apt install -y "${packages[@]}"
+        ;;
+      *)
+        echo "❌ Unknown OS type. Please install packages manually: ${packages[*]}"
+        ;;
+    esac
   fi
   
   # Install Oh My Zsh if not present
@@ -1037,11 +1050,7 @@ install-dependencies() {
     fi
   fi
   
-  # Install Python tools
-  if command -v pip >/dev/null 2>&1; then
-    ! command -v yt-dlp >/dev/null 2>&1 && pip install --user yt-dlp
-    ! command -v gallery-dl >/dev/null 2>&1 && pip install --user gallery-dl
-  fi
+  # Python tools section removed (yt-dlp, gallery-dl no longer needed)
   
   # Install uv (Python package manager)
   if ! command -v uv >/dev/null 2>&1; then

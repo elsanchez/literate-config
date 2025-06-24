@@ -177,9 +177,15 @@ setup-literate-config  # This will install dependencies and setup everything
 - **doom-config.org**: Contains `init.el`, `config.el`, `packages.el`, and `custom.el` sections
   - LSP and direnv enabled for development
   - claudemacs for AI integration with conditional loading (compatible with macOS/systems without Claude)
+  - Cross-platform doom binary path detection (`~/.emacs.d/bin/doom` on macOS, `~/.config/emacs/bin/doom` on Linux)
   - Graceful fallback to alternative Claude packages when available
   - Format-on-save enabled with apheleia
-- **zsh-config.org**: Full Zsh setup with Oh My Zsh, powerlevel10k, aliases, functions, and utilities
+- **zsh-config.org**: **Cross-platform** Zsh setup with automatic OS detection
+  - **Package Management**: Automatic brew (macOS) vs apt (Linux) detection
+  - **Aliases**: Universal package commands (`pi`, `pr`, `ps`, `pu`, `pc`, `pinfo`)
+  - **File Managers**: Native `open` (macOS) vs `xdg-open` (Linux)
+  - **Daemon Management**: systemd with manual fallbacks
+  - Oh My Zsh, powerlevel10k, and essential utilities
 - **tmux-config.org**: Cross-platform tmux configuration with oh-my-tmux integration
   - Linux: `~/.config/tmux/tmux.conf.local` with xclip clipboard integration
   - macOS: `~/.tmux.conf.local` with pbcopy clipboard integration
@@ -232,7 +238,7 @@ setup-literate-config  # This will install dependencies and setup everything
 - Dotfiles management: `config-init-dotfiles`, `config-create-symlinks`, `config-sync-to-dotfiles`, `config-status`, `config-enhanced-reload`
 - Dependency management: `check-dependencies`, `install-dependencies`, `setup-literate-config`
 - Tmux utilities: `tms()`, `tmgo()`, `tmkill()` (with dependency checking)
-- File utilities: `mkcd()`, `up()`, `e()`, `download_video()` (with validation)
+- File utilities: `mkcd()`, `up()`, `e()` (cross-platform file operations)
 
 ### Error Recovery
 If configuration deployment fails:

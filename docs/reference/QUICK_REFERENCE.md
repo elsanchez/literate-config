@@ -53,7 +53,7 @@ emacs-status         # Check daemon health
 | `check-dependencies` | Check deps |
 | `install-dependencies` | Install deps |
 | `tms` | Tmux sessions |
-| `apu` | Update system |
+| `pu` | Update system (cross-platform) |
 | `reload!` | Reload zsh |
 
 ---

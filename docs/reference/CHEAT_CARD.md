@@ -39,7 +39,7 @@
 │ mkcd <dir>             │ Create dir and cd into it             │
 │ up <n>                 │ Go up N directories                   │
 │ e <file>               │ Edit with Emacs (terminal)           │
-│ apu                    │ apt update && upgrade                 │
+│ pu                     │ Update system (cross-platform)       │
 │ reload!                │ Reload zsh config                    │
 └─────────────────────────────────────────────────────────────────┘
 

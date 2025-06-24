@@ -96,27 +96,25 @@
 ### **📹 Media Download**
 | Command | Description | Usage Example |
 |---------|-------------|---------------|
-| `download_video <url> [filename]` | **Smart video downloader** (yt-dlp/gallery-dl) | `download_video "https://youtube.com/watch?v=..." "video"` |
-| `yt <url> [filename]` | Alias for download_video | `yt "https://x.com/..." "tweet"` |
 
 ### **🔧 System Utilities**
 | Command | Description | Usage Example |
 |---------|-------------|---------------|
-| `please <command>` | Alias for sudo | `please apt update` |
+| `please <command>` | Alias for sudo | `please pi tmux` |
 | `reload!` | Reload zsh configuration | `reload!` |
 | `restart-audio` | Restart audio system (pipewire/pulseaudio) | `restart-audio` |
 
-### **📦 APT Package Management (Short Aliases)**
-| Alias | Full Command | Description |
-|-------|--------------|-------------|
-| `api` | `sudo apt install` | Install package |
-| `apr` | `sudo apt remove` | Remove package |
-| `app` | `sudo apt purge` | Purge package completely |
-| `aps` | `apt search` | Search packages |
-| `apu` | `sudo apt update && sudo apt upgrade` | **Update and upgrade** |
-| `apc` | `sudo apt autoremove` | Clean unused packages |
-| `apf` | `sudo apt --fix-broken install` | Fix broken packages |
-| `apsh` | `apt show` | Show package information |
+### **📦 Cross-Platform Package Management**
+| Alias | Linux (APT) | macOS (Homebrew) | Description |
+|-------|-------------|------------------|-------------|
+| `pi` | `sudo apt install` | `brew install` | **Install package** |
+| `pr` | `sudo apt remove` | `brew uninstall` | Remove package |
+| `ps` | `apt search` | `brew search` | Search packages |
+| `pu` | `sudo apt update && sudo apt upgrade` | `brew update && brew upgrade` | **Update and upgrade** |
+| `pc` | `sudo apt autoremove` | `brew cleanup` | Clean unused packages |
+| `pinfo` | `apt show` | `brew info` | Show package information |
+
+> **Note**: The system automatically detects your OS and uses the appropriate package manager.
 
 ---
 
@@ -217,7 +215,7 @@ setup-literate-config # Nuclear option: complete reset
 ### **⚡ Speed Tips**
 - Use **`setup-literate-config`** for new machine setup
 - **`install-dependencies`** handles all missing tools automatically
-- **`apu`** for quick system updates
+- **`pu`** for quick system updates
 - **`tms`** and **`tmgo`** for efficient tmux workflow
 
 ---

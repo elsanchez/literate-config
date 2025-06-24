@@ -360,7 +360,9 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
   "Validate Doom Emacs configuration before applying."
   (interactive)
   (let ((doom-bin (or (executable-find "doom")
-                      (expand-file-name "~/.config/emacs/bin/doom"))))
+                      (if (eq system-type 'darwin)
+                          (expand-file-name "~/.emacs.d/bin/doom")
+                        (expand-file-name "~/.config/emacs/bin/doom")))))
     (if (and doom-bin (file-executable-p doom-bin))
         (progn
           (message "🔍 Validating Doom configuration...")
@@ -441,48 +443,56 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
       (t (message "❌ Invalid choice.")))))
 
 (defun elsanchez/auto-restart-daemon ()
-  "Automatically restart daemon and open new frame."
+  "Automatically restart daemon and open new frame (cross-platform)."
   (interactive)
   (message "🔄 Restarting Emacs daemon...")
   
-  ;; Check if service exists and is active
-  (let ((service-status (shell-command-to-string "systemctl --user is-active emacs.service 2>/dev/null")))
-    (if (string-match-p "active" service-status)
+  (cond
+   ;; Linux: Try systemd first, fallback to manual
+   ((eq system-type 'gnu/linux)
+    (if (and (executable-find "systemctl")
+             (string-match-p "active" 
+                           (shell-command-to-string "systemctl --user is-active emacs.service 2>/dev/null")))
         (progn
-          (message "📋 Emacs service is active, restarting...")
-          (start-process-shell-command 
-           "restart-emacs-daemon" nil
-           "systemctl --user restart emacs.service")
-          
-          ;; Wait and verify restart
-          (run-at-time
-           "2 sec" nil
-           (lambda ()
-             (let ((new-status (shell-command-to-string "systemctl --user is-active emacs.service 2>/dev/null")))
-               (if (string-match-p "active" new-status)
-                   (progn
-                     (message "✅ Daemon restarted successfully")
-                     (run-at-time
-                      "1 sec" nil
+          (message "📋 Using systemd service...")
+          (start-process-shell-command "restart-emacs-daemon" nil
+                                     "systemctl --user restart emacs.service")
+          (run-at-time "2 sec" nil
                       (lambda ()
-                        (when (y-or-n-p "🖼️ Open new Emacs frame? ")
-                          (elsanchez/open-new-frame)))))
-                   (message "❌ Daemon restart failed. Check with: systemctl --user status emacs.service"))))))
-
-        ;; Service not active, try alternative restart methods
-        (progn
-          (message "⚠️ Emacs service not found or inactive")
-          (when (y-or-n-p "🔄 Try alternative restart method? ")
-            (elsanchez/alternative-restart))))))
+                        (if (string-match-p "active" 
+                                          (shell-command-to-string "systemctl --user is-active emacs.service 2>/dev/null"))
+                            (message "✅ Daemon restarted successfully")
+                          (message "❌ Systemd restart failed, trying manual...")
+                          (elsanchez/restart-daemon-manual)))))
+      (elsanchez/restart-daemon-manual)))
+   
+   ;; macOS/Other: Manual restart
+   (t
+    (elsanchez/restart-daemon-manual)))
+  
+  ;; Offer to open new frame
+  (run-at-time "3 sec" nil
+              (lambda ()
+                (when (y-or-n-p "🖼️ Open new Emacs frame? ")
+                  (elsanchez/open-new-frame)))))
 
 (defun elsanchez/restart-daemon-only ()
-  "Restart only the daemon without opening new frame."
+  "Restart only the daemon without opening new frame (cross-platform)."
   (interactive)
   (message "🔄 Restarting Emacs daemon...")
-  (start-process-shell-command 
-   "restart-emacs-daemon" nil
-   "systemctl --user restart emacs.service")
+  (elsanchez/restart-daemon-manual)
   (message "✅ Restart command sent"))
+
+(defun elsanchez/restart-daemon-manual ()
+  "Manual daemon restart (works on all platforms)."
+  (interactive)
+  (message "💀 Stopping current daemon...")
+  (ignore-errors
+    (start-process-shell-command "kill-emacs" nil "pkill -f 'emacs.*--daemon'"))
+  (run-at-time "2 sec" nil
+              (lambda ()
+                (message "🚀 Starting new daemon...")
+                (start-process-shell-command "start-emacs-daemon" nil "emacs --daemon"))))
 
 (defun elsanchez/open-new-frame ()
   "Open new Emacs frame with error handling."
@@ -541,7 +551,9 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
   "Enhanced config reload with testing options, backup, validation, and error handling."
   (interactive)
   (let* ((doom-bin (or (executable-find "doom")
-                       (expand-file-name "~/.config/emacs/bin/doom")))
+                       (if (eq system-type 'darwin)
+                           (expand-file-name "~/.emacs.d/bin/doom")
+                         (expand-file-name "~/.config/emacs/bin/doom"))))
          (config-dir "~/org/literate-config/"))
     
     (unless (and doom-bin (file-executable-p doom-bin))
@@ -587,7 +599,9 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
     "Direct config reload with backup, validation, and error handling."
     (interactive)
     (let* ((doom-bin (or (executable-find "doom")
-                         (expand-file-name "~/.config/emacs/bin/doom")))
+                         (if (eq system-type 'darwin)
+                             (expand-file-name "~/.emacs.d/bin/doom")
+                           (expand-file-name "~/.config/emacs/bin/doom"))))
            (config-dir "~/org/literate-config/"))
 
       (message "🚀 Starting direct config reload...")
