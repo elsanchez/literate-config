@@ -117,6 +117,11 @@ source $ZSH/oh-my-zsh.sh
 # Load Powerlevel10k configuration if available
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
+# Load Linux-specific functions if not on macOS
+if [[ "$OS_TYPE" != "macos" && -f "$HOME/.zsh_functions" ]]; then
+  source "$HOME/.zsh_functions"
+fi
+
 # Set environment variables (cross-platform)
 export EDITOR='emacs'
 case "$OS_TYPE" in
@@ -1050,7 +1055,13 @@ install-dependencies() {
     fi
   fi
   
-  # Python tools section removed (yt-dlp, gallery-dl no longer needed)
+  # Linux-specific Python tools (excluded on macOS)
+  if [[ "$OS_TYPE" != "macos" ]]; then
+    if command -v pip >/dev/null 2>&1; then
+      ! command -v yt-dlp >/dev/null 2>&1 && echo "📦 Installing yt-dlp..." && pip install --user yt-dlp
+      ! command -v gallery-dl >/dev/null 2>&1 && echo "📦 Installing gallery-dl..." && pip install --user gallery-dl
+    fi
+  fi
   
   # Install uv (Python package manager)
   if ! command -v uv >/dev/null 2>&1; then
@@ -1164,6 +1175,79 @@ config-enhanced-reload() {
   echo "🔄 Reload your shell: source ~/.zshrc or restart terminal"
 }
 
+#+end_src
+
+---
+
+** Linux-specific Functions (Generated conditionally)
+
+This section generates a separate `.zsh_functions` file only when the OS is not macOS.
+Contains multimedia download functions that require Linux-specific tools.
+
+#+PROPERTY: header-args :results none
+#+begin_src shell :tangle (if (string= (or (getenv "OS_TYPE") "unknown") "macos") "no" "~/.zsh_functions")
+# Linux-specific functions (excluded on macOS)
+# This file is generated conditionally by the literate config
+
+# Video/media download function with support for various platforms
+download_video() {
+  local url=$1
+  local output_filename=$2
+  local output_dir=~/Downloads/videos
+  
+  if [[ -z "$url" ]]; then
+    echo "❌ Usage: download_video <url> [filename]"
+    echo "Supports: YouTube, Twitter/X, Instagram, DeviantArt, and more"
+    return 1
+  fi
+  
+  mkdir -p "$output_dir"
+
+  case "$url" in
+    *instagram.com*|*deviantart.com*)
+      if ! command -v gallery-dl >/dev/null 2>&1; then
+        echo "❌ gallery-dl not found. Install with: pip install gallery-dl"
+        return 1
+      fi
+      cookies_file=~/Documents/cookies.instagram.txt
+      if [[ -n "$output_filename" ]]; then
+        gallery-dl --cookies "${cookies_file}" \
+                 --output "$output_dir/${output_filename}.%(extension)s" "$url"
+      else
+        gallery-dl --cookies "${cookies_file}" \
+                 --output "$output_dir/%(title)s.%(extension)s" "$url"
+      fi
+      ;;
+    *x.com*|*twitter.com*)
+      if ! command -v yt-dlp >/dev/null 2>&1; then
+        echo "❌ yt-dlp not found. Install with: pip install yt-dlp"
+        return 1
+      fi
+      cookies_file=~/Documents/cookies.twitter.txt
+      if [[ -n "$output_filename" ]]; then
+        yt-dlp --cookies "${cookies_file}" -o "${output_dir}/${output_filename}.%(ext)s" "$url"
+      else
+        yt-dlp --cookies "${cookies_file}" -o "${output_dir}/%(title)s.%(ext)s" "$url"
+      fi
+      ;;
+    *)
+      if ! command -v yt-dlp >/dev/null 2>&1; then
+        echo "❌ yt-dlp not found. Install with: pip install yt-dlp"
+        return 1
+      fi
+      if [[ -n "$output_filename" ]]; then
+        yt-dlp -o "${output_dir}/${output_filename}.%(ext)s" "$url"
+      else
+        yt-dlp -o "${output_dir}/%(title)s.%(ext)s" "$url"
+      fi
+      ;;
+  esac
+  
+  echo "✅ Download completed to: $output_dir"
+}
+
+# Alias for convenience
+alias yt='download_video'
 #+end_src
 
 ---
