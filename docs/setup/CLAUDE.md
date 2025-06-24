@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is a literate configuration repository that uses Org-mode to document and generate configuration files for:
 - **Doom Emacs** (`doom-config.org` → `~/.config/doom/`)
 - **Zsh shell** (`zsh-config.org` → `~/.zshrc`)
+- **Tmux** (`tmux-config.org` → `~/.config/tmux/tmux.conf.local` or `~/.tmux.conf.local`)
 - **Custom scripts** (`scripts.org` → `~/.local/bin/`)
 
 The repository follows a literate programming approach where configuration is documented in `.org` files and "tangled" to generate actual config files.
@@ -179,6 +180,10 @@ setup-literate-config  # This will install dependencies and setup everything
   - Graceful fallback to alternative Claude packages when available
   - Format-on-save enabled with apheleia
 - **zsh-config.org**: Full Zsh setup with Oh My Zsh, powerlevel10k, aliases, functions, and utilities
+- **tmux-config.org**: Cross-platform tmux configuration with oh-my-tmux integration
+  - Linux: `~/.config/tmux/tmux.conf.local` with xclip clipboard integration
+  - macOS: `~/.tmux.conf.local` with pbcopy clipboard integration
+  - Platform-specific paths for plugins and status scripts
 - **scripts.org**: Utility scripts like `focus_or_launch.sh` for window management
 
 ### Enhanced Features

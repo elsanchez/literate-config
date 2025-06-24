@@ -1,0 +1,1 @@
+- Siempre que realices cambios en codigo recuerda actualizar el archivo docs/setup/PROJECT_STATE.md docs/reference/KEYBINDINGS_CHEATSHEET.md docs/setup/CLAUDE.md docs/setup/CONTINUATION_PROMPT.md y demás archivos que requieran actualizacion en docs
