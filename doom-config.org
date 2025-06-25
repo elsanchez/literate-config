@@ -118,6 +118,7 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
        :os
        (:if (featurep :system 'macos) macos)  ; improve compatibility with macOS
        ;;tty               ; improve the terminal Emacs experience
+       eat               ; modern terminal emulation for Emacs
 
        :lang
        ;;agda              ; types of types of types of types...
@@ -852,6 +853,11 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 ;; Font fixes
 (set-fontset-font t 'unicode (font-spec :family "JuliaMono"))
 
+;; EAT terminal configuration
+(add-hook 'claude-code-start-hook
+          (lambda ()
+            (setq-local eat-minimum-latency 0.033
+                        eat-maximum-latency 0.1)))
 
 ;; Function to get API key from Secret Service
 (defun my/get-anthropic-api-key-from-secret-service ()
