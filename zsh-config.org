@@ -25,6 +25,24 @@ case "$(uname -s)" in
     ;;
 esac
 
+# macOS Homebrew initialization based on architecture
+if [[ "$OS_TYPE" == "macos" ]]; then
+  case "$(uname -m)" in
+    arm64)
+      # Apple Silicon (M1/M2/M3) - Homebrew in /opt/homebrew
+      if [[ -f "/opt/homebrew/bin/brew" ]]; then
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+      fi
+      ;;
+    x86_64)
+      # Intel Mac - Homebrew in /usr/local
+      if [[ -f "/usr/local/bin/brew" ]]; then
+        eval "$(/usr/local/bin/brew shellenv)"
+      fi
+      ;;
+  esac
+fi
+
 # Instant Prompt loading for faster startup
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
@@ -122,11 +140,37 @@ if [[ "$OS_TYPE" != "macos" && -f "$HOME/.zsh_functions" ]]; then
   source "$HOME/.zsh_functions"
 fi
 
+# Load work-specific environment (macOS only, if exists)
+if [[ "$OS_TYPE" == "macos" && -f "$HOME/.zsh_work_env" ]]; then
+  source "$HOME/.zsh_work_env"
+fi
+
 # Set environment variables (cross-platform)
 export EDITOR='emacs'
 case "$OS_TYPE" in
   macos)
     export BROWSER='open'
+    export TERM=xterm
+    
+    # Java JDK 17 (check if installed)
+    if [[ -d "/Library/Java/JavaVirtualMachines/jdk-17.jdk" ]]; then
+      export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-17.jdk/Contents/Home
+    fi
+    
+    # Maven configuration (if installed via Homebrew)
+    if command -v mvn >/dev/null 2>&1; then
+      # Detect Maven version dynamically
+      maven_version=$(mvn -version | head -1 | awk '{print $3}' 2>/dev/null)
+      if [[ -n "$maven_version" && -d "/opt/homebrew/Cellar/maven/$maven_version" ]]; then
+        export M3_HOME="/opt/homebrew/Cellar/maven/$maven_version"
+        export M3="$M3_HOME/bin"
+      fi
+    fi
+    
+    # Oracle TNS configuration
+    if [[ -d "$HOME/tools/instantclient_19_8/network/admin" ]]; then
+      export TNS_ADMIN="$HOME/tools/instantclient_19_8/network/admin"
+    fi
     ;;
   linux)
     export BROWSER='firefox'
@@ -136,22 +180,37 @@ case "$OS_TYPE" in
     ;;
 esac
 
-# Setup PATH for pipx if installed
-if command -v pipx > /dev/null 2>&1; then
-  export PATH="$PATH:~/.local/bin"
-fi
-
-# Setup emacs, npm, nvim environment (cross-platform paths)
-export PATH="$PATH:$HOME/.config/emacs/bin:$HOME/.npm-global/bin"
+# Setup npm environment 
+export PATH="$PATH:$HOME/.npm-global/bin"
 
 # OS-specific PATH additions
 case "$OS_TYPE" in
   macos)
-    # macOS specific paths
-    export PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"
-    [[ -d "/Applications/Emacs.app/Contents/MacOS/bin" ]] && export PATH="$PATH:/Applications/Emacs.app/Contents/MacOS/bin"
+    # Doom Emacs (macOS uses ~/.emacs.d)
+    [[ -d "$HOME/.emacs.d/bin" ]] && export PATH="$PATH:$HOME/.emacs.d/bin"
+    
+    # Python local packages
+    [[ -d "$HOME/.local/bin" ]] && export PATH="$PATH:$HOME/.local/bin"
+    
+    # Rust/Cargo tools
+    [[ -d "$HOME/.cargo/bin" ]] && export PATH="$PATH:$HOME/.cargo/bin"
+    
+    # OpenSSL (Homebrew)
+    [[ -d "/opt/homebrew/opt/openssl@3/bin" ]] && export PATH="$PATH:/opt/homebrew/opt/openssl@3/bin"
+    
+    # Oracle SQLcl
+    [[ -d "$HOME/bin/sqlcl/bin" ]] && export PATH="$PATH:$HOME/bin/sqlcl/bin"
+    
+    # Personal binaries
+    [[ -d "$HOME/bin" ]] && export PATH="$PATH:$HOME/bin"
+    
+    # Go binaries (if GOPATH exists)
+    [[ -n "$GOPATH" && -d "$GOPATH/bin" ]] && export PATH="$PATH:$GOPATH/bin"
     ;;
   linux)
+    # Doom Emacs (Linux uses ~/.config/emacs)
+    [[ -d "$HOME/.config/emacs/bin" ]] && export PATH="$PATH:$HOME/.config/emacs/bin"
+    
     # Linux specific paths
     [[ -d "/opt/nvim-linux-x86_64/bin" ]] && export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
     ;;
@@ -168,6 +227,7 @@ case "$OS_TYPE" in
     alias pc='brew cleanup'
     alias pinfo='brew info'
     alias restart-audio='sudo killall coreaudiod'
+    alias gh="history | grep"
     # Use native macOS 'open' command for file manager
     ;;
   linux)

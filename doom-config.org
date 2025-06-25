@@ -848,34 +848,9 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 (when (fboundp '--ecc-vterm-utils-enable-yank-advice)
   (--ecc-vterm-utils-enable-yank-advice))
 
-;; COMMENTED OUT: claude-code config - Using claudemacs instead
-(use-package! claude-code
-  :commands (claude-chat claude-code-region claude-code-buffer claude-code-file claude-code-fix-region)
-  :config
-  (setq claude-code-default-system-prompt
-        "You are a senior software engineer helping improve and refactor code.
- Respond only with code or clear suggestions. Avoid vague or generic replies."))
-
-;; Only setup keybindings if functions are available
-(when (and (fboundp 'claude-chat)
-           (fboundp 'claude-code-region)
-           (fboundp 'claude-code-buffer)
-           (fboundp 'claude-code-file)
-           (fboundp 'claude-code-fix-region))
-  (map! :leader
-        (:prefix ("ai" . "AI / Claude")
-         :desc "Claude: chat in popup" "c" #'claude-chat
-         :desc "Claude: ask region"   "r" #'claude-code-region
-         :desc "Claude: ask buffer"   "b" #'claude-code-buffer
-         :desc "Claude: ask file"     "f" #'claude-code-file
-         :desc "Claude: fix region"   "F" #'claude-code-fix-region)))
 ;;
-;; ;; Font & flicker fixes
+;; Font fixes
 (set-fontset-font t 'unicode (font-spec :family "JuliaMono"))
-(add-hook 'claude-code-start-hook
-          (lambda ()
-            (setq-local eat-minimum-latency 0.033
-                        eat-maximum-latency 0.1)))
 
 
 ;; Function to get API key from Secret Service
@@ -886,6 +861,35 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
                 "secret-tool lookup service anthropic account claude 2>/dev/null")))
       (when (and key (not (string-empty-p key)))
         (string-trim key)))))
+
+;; Jira/Confluence authentication functions (macOS only)
+(when (eq system-type 'darwin)
+  (defun my/get-jira-credentials-from-keychain ()
+    "Get Jira credentials from macOS Keychain."
+    (when (executable-find "security")
+      (let ((url (shell-command-to-string
+                  "security find-generic-password -a work -s jira-url -w 2>/dev/null"))
+            (email (shell-command-to-string
+                    "security find-generic-password -a work -s jira-email -w 2>/dev/null"))
+            (token (shell-command-to-string
+                    "security find-generic-password -a work -s jira-token -w 2>/dev/null")))
+        (when (and url email token 
+                   (not (string-empty-p (string-trim url)))
+                   (not (string-empty-p (string-trim email)))
+                   (not (string-empty-p (string-trim token))))
+          (list (string-trim url) (string-trim email) (string-trim token))))))
+  
+  (defun my/get-confluence-credentials-from-keychain ()
+    "Get Confluence credentials from macOS Keychain."
+    (when (executable-find "security")
+      (let ((url (shell-command-to-string
+                  "security find-generic-password -a work -s confluence-url -w 2>/dev/null"))
+            (token (shell-command-to-string
+                    "security find-generic-password -a work -s confluence-token -w 2>/dev/null")))
+        (when (and url token
+                   (not (string-empty-p (string-trim url)))
+                   (not (string-empty-p (string-trim token))))
+          (list (string-trim url) (string-trim token)))))))
 
 ;; claudemacs - AI assistant with Secret Service integration
 (use-package! claudemacs
@@ -915,6 +919,95 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
            :desc "Claudemacs: Help"          "h" #'claudemacs-help)))
   
   (message "✅ claudemacs configured with Secret Service integration"))
+
+;; Jira/Confluence Integration (macOS only)
+(when (eq system-type 'darwin)
+  ;; Jira Integration
+  (when-let ((jira-creds (my/get-jira-credentials-from-keychain)))
+    (use-package! jiralib2
+      :commands (jiralib2-get-issues jiralib2-get-projects)
+      :config
+      (setq jiralib2-url (nth 0 jira-creds)
+            jiralib2-auth 'basic
+            jiralib2-user-login-name (nth 1 jira-creds)
+            jiralib2-token (nth 2 jira-creds)))
+    
+    (use-package! org-jira
+      :after org
+      :commands (org-jira-get-issues org-jira-get-projects)
+      :config
+      (setq org-jira-working-dir "~/org/jira/"
+            org-jira-users-list '(("admin" . "Administrator"))
+            org-jira-done-states '("Closed" "Resolved" "Done")
+            org-jira-todo-states '("To Do" "In Progress" "In Review"))
+      
+      ;; Create jira directory if it doesn't exist
+      (unless (file-exists-p org-jira-working-dir)
+        (make-directory org-jira-working-dir t))))
+  
+  ;; Confluence Integration  
+  (when-let ((confluence-creds (my/get-confluence-credentials-from-keychain)))
+    (use-package! ox-confluence
+      :after ox
+      :config
+      (setq ox-confluence-url (nth 0 confluence-creds)
+            ox-confluence-space-key "TEAM"))
+    
+    (use-package! restclient
+      :mode ("\\.http\\'" . restclient-mode)
+      :config
+      (defun my/confluence-rest-template ()
+        "Insert REST client template for Confluence API."
+        (interactive)
+        (let ((url (nth 0 confluence-creds))
+              (token (nth 1 confluence-creds)))
+          (insert (format "# Confluence REST API Template
+# Base URL: %s
+# Authentication: Bearer token
+
+### Get all spaces
+GET %s/rest/api/space
+Authorization: Bearer %s
+Content-Type: application/json
+
+### Get space content
+GET %s/rest/api/space/TEAM/content
+Authorization: Bearer %s
+Content-Type: application/json
+
+### Create page
+POST %s/rest/api/content
+Authorization: Bearer %s
+Content-Type: application/json
+
+{
+  \"type\": \"page\",
+  \"title\": \"New Page Title\",
+  \"space\": {\"key\": \"TEAM\"},
+  \"body\": {
+    \"storage\": {
+      \"value\": \"<p>Page content here</p>\",
+      \"representation\": \"storage\"
+    }
+  }
+}
+"
+                          url url token url token url token))))))
+  
+  ;; Jira/Confluence keybindings (only when credentials are available)
+  (when (or (my/get-jira-credentials-from-keychain) 
+            (my/get-confluence-credentials-from-keychain))
+    (map! :leader
+          (:prefix ("j" . "jira/confluence")
+           :desc "Get Jira issues" "i" #'org-jira-get-issues
+           :desc "Get Jira projects" "p" #'org-jira-get-projects  
+           :desc "Create Jira issue" "c" #'org-jira-create-issue
+           :desc "Update Jira issue" "u" #'org-jira-update-issue
+           :desc "Browse Jira issue" "b" #'org-jira-browse-issue
+           :desc "Export to Confluence" "e" #'ox-confluence-export-as-confluence
+           :desc "REST client template" "r" #'my/confluence-rest-template
+           :desc "Open jira directory" "d" (lambda () (interactive) 
+                                              (dired org-jira-working-dir))))))
 
 
 
@@ -1030,13 +1123,17 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 (package! org-roam)
 (package! apheleia)
 
-;;claude-code - COMMENTED OUT: Using claudemacs instead
-;; (package! claude-code
-;;     :recipe (:host github :repo "stevemolitor/claude-code.el"))
 
 ;; claudemacs - AI assistant integrated with Emacs
 (package! claudemacs
   :recipe (:host github :repo "cpoile/claudemacs"))
+
+;; Jira/Confluence packages (macOS only)
+(when (eq system-type 'darwin)
+  (package! jiralib2)
+  (package! org-jira)
+  (package! ox-confluence)
+  (package! restclient))
 
 ;; emacs-claude-code - COMMENTED OUT: Using claudemacs instead
 ;; (package! emacs-claude-code

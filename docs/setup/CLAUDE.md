@@ -15,11 +15,21 @@ The repository follows a literate programming approach where configuration is do
 ## AI Integration
 
 The configuration includes **claudemacs** integration for AI assistance directly within Emacs:
-- Uses `cpoile/claudemacs` package for Claude AI integration
+- Uses `cpoile/claudemacs` package for Claude AI integration  
 - Secret Service integration for secure API key management
-- Keybindings under `SPC c` prefix for AI operations
-- **Cross-platform compatibility**: All Claude-related functions include existence checks for seamless operation on systems without Claude packages
-- Supports fallback to alternative Claude packages (`claude-code`, `emacs-claude-code`) with conditional loading
+- **Consolidated keybindings** under `SPC c` prefix (claude-code conflicts resolved)
+- **Cross-platform compatibility**: All Claude-related functions include existence checks
+- **v4.0 Update**: Removed conflicting claude-code configuration for clean operation
+
+## Jira/Confluence Integration (macOS)
+
+**NEW v4.0**: Complete workflow integration with secure credential management:
+- **macOS Keychain** authentication for secure credential storage
+- **org-jira** for issue management and project tracking
+- **ox-confluence** for seamless export from org-mode to Confluence
+- **REST client** templates for API interactions
+- **Keybindings** under `SPC j` prefix for complete workflow
+- **Working directory**: `~/org/jira/` (auto-created)
 
 ## Essential Commands
 
@@ -300,7 +310,34 @@ If configuration deployment fails:
 
 ## Cross-Platform Compatibility
 
-### macOS Support
+### macOS Enhanced Support (v4.0)
+Complete macOS integration with professional development environment:
+
+#### **Environment Variables** (Auto-configured):
+- **JAVA_HOME**: Auto-detected JDK 17 installation
+- **M3_HOME/M3**: Dynamic Maven version detection from Homebrew
+- **TNS_ADMIN**: Oracle TNS configuration path
+- **TERM**: Set to xterm for compatibility
+
+#### **PATH Restoration** (All missing paths restored):
+- `~/.emacs.d/bin` - Doom Emacs (macOS-specific)
+- `~/.local/bin` - Python local packages
+- `~/.cargo/bin` - Rust/Cargo tools
+- `/opt/homebrew/opt/openssl@3/bin` - Updated OpenSSL
+- `~/bin/sqlcl/bin` - Oracle SQLcl
+- `~/bin` - Personal binaries
+- `$GOPATH/bin` - Go tools
+
+#### **Architecture Detection**:
+- **ARM64** (Apple Silicon): `/opt/homebrew/bin/brew shellenv`
+- **Intel** (x86_64): `/usr/local/bin/brew shellenv`
+
+#### **Work Environment Integration**:
+- **~/.zsh_work_env**: Secure credential file (excluded from git)
+- **macOS Keychain**: Secure password/token storage
+- **Conditional loading**: Only on macOS, fails gracefully
+
+### Cross-Platform Claude Integration
 The configuration is designed to work seamlessly across different platforms, including macOS systems where Claude packages may not be available:
 
 - **Conditional Loading**: All Claude-related packages (`claudemacs`, `claude-code`, `emacs-claude-code`) use existence checks
@@ -364,14 +401,30 @@ doom-rollback      # Rollback if needed
 
 ### AI Integration (claudemacs)
 ```bash
-# From Emacs (when claudemacs is available)
+# From Emacs (consolidated under SPC c)
 SPC c c          # Start Claude chat
 SPC c r          # Ask Claude about region
 SPC c b          # Ask Claude about buffer
 SPC c h          # Claude help
 
-# Note: Keybindings only appear when Claude packages are installed
-# On systems without Claude, the configuration loads cleanly without errors
+# Note: v4.0 - Conflicts with claude-code resolved
+# Clean loading on all systems without errors
+```
+
+### Jira/Confluence Workflow (macOS)
+```bash
+# From Emacs (SPC j prefix)
+SPC j i          # Get Jira issues
+SPC j p          # Get Jira projects
+SPC j c          # Create Jira issue
+SPC j u          # Update current issue
+SPC j b          # Browse issue in browser
+SPC j e          # Export org to Confluence
+SPC j r          # REST client template
+SPC j d          # Open jira directory
+
+# Setup credentials in Keychain first
+# See docs/reference/WORK_ENVIRONMENT.md for setup
 ```
 
 ### Emergency Recovery
@@ -395,6 +448,7 @@ This repository includes comprehensive reference materials:
 - **`docs/reference/QUICK_REFERENCE.md`** - Essential commands for daily use  
 - **`docs/reference/CHEAT_CARD.md`** - Printable cheat card format
 - **`docs/setup/CLAUDE.md`** - This comprehensive guide
+- **✨ NEW `docs/reference/WORK_ENVIRONMENT.md`** - macOS work environment setup with Keychain integration
 
 ### Key Maps and Documentation Guidelines
 - Siempre que se agregen, modifiquen o eliminen los key maps documentalo en el archivo docs/reference/KEYBINDINGS_CHEATSHEET.md y docs/reference/CHEAT_CARD.md

@@ -20,13 +20,25 @@
 | `SPC r e d` | `elsanchez/restart-daemon-only` | Restart daemon only (no frame) |
 | `SPC r e f` | `elsanchez/open-new-frame` | Open new Emacs frame |
 
-### **🤖 Claudemacs AI Integration**
+### **🤖 Claude AI Integration (Consolidated)**
 | Keybinding | Command | Description |
 |------------|---------|-------------|
 | `SPC c c` | `claudemacs-chat` | **Start claudemacs chat session** |
 | `SPC c r` | `claudemacs-region` | Send selected region to Claude |
 | `SPC c b` | `claudemacs-buffer` | Send entire buffer to Claude |
 | `SPC c h` | `claudemacs-help` | Show claudemacs help and documentation |
+
+### **📋 Jira/Confluence Integration (macOS)**
+| Keybinding | Command | Description |
+|------------|---------|-------------|
+| `SPC j i` | `org-jira-get-issues` | **Get Jira issues** |
+| `SPC j p` | `org-jira-get-projects` | Get Jira projects |
+| `SPC j c` | `org-jira-create-issue` | Create new Jira issue |
+| `SPC j u` | `org-jira-update-issue` | Update current issue |
+| `SPC j b` | `org-jira-browse-issue` | Browse issue in browser |
+| `SPC j e` | `ox-confluence-export-as-confluence` | Export org to Confluence |
+| `SPC j r` | `my/confluence-rest-template` | Insert REST client template |
+| `SPC j d` | Open jira directory | Browse ~/org/jira/ directory |
 
 ---
 
@@ -155,6 +167,58 @@ emacs-restart         # Restart daemon
 config-restore        # Restore from git backups
 setup-literate-config # Nuclear option: complete reset
 ```
+
+---
+
+## 🍎 **macOS-Specific Features**
+
+### **🔧 Environment Variables (Auto-configured)**
+| Variable | Description | Detection |
+|----------|-------------|-----------|
+| `JAVA_HOME` | JDK 17 installation | Auto-detected from `/Library/Java/JavaVirtualMachines/` |
+| `M3_HOME` | Maven installation path | Dynamic version detection from Homebrew |
+| `M3` | Maven bin directory | Based on M3_HOME |
+| `TNS_ADMIN` | Oracle TNS configuration | `~/tools/instantclient_19_8/network/admin` |
+| `TERM` | Terminal type | Set to `xterm` |
+
+### **🏗️ Architecture Detection**
+```bash
+# ARM64 (Apple Silicon)
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# Intel (x86_64)  
+eval "$(/usr/local/bin/brew shellenv)"
+```
+
+### **📁 PATH Restoration (macOS)**
+| Path | Tool/Purpose | Condition |
+|------|-------------|-----------|
+| `~/.emacs.d/bin` | Doom Emacs | macOS specific |
+| `~/.local/bin` | Python local packages | If directory exists |
+| `~/.cargo/bin` | Rust tools | If directory exists |
+| `/opt/homebrew/opt/openssl@3/bin` | OpenSSL | Homebrew installation |
+| `~/bin/sqlcl/bin` | Oracle SQLcl | If directory exists |
+| `~/bin` | Personal binaries | If directory exists |
+| `$GOPATH/bin` | Go tools | If GOPATH set |
+
+### **🔐 Work Environment (.zsh_work_env)**
+```bash
+# Secure credential management
+export WORK_PASSWORD="$(security find-generic-password -w -s work-password -a $(whoami))"
+
+# Go proxy configuration
+export GOPROXY="company-proxy"
+export GOSUMDB="company-sumdb"
+```
+
+### **🎯 macOS Aliases**
+| Alias | Command | Description |
+|-------|---------|-------------|
+| `pi` | `brew install` | Package install |
+| `pr` | `brew uninstall` | Package remove |
+| `pu` | `brew update && brew upgrade` | Package update |
+| `pc` | `brew cleanup` | Package cleanup |
+| `gh` | `history \| grep` | **NEW**: Grep history |
 
 ---
 

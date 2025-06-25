@@ -6,20 +6,30 @@
 
 Hola, tengo un proyecto de literate configuration para Doom Emacs y Zsh en `~/org/literate-config/`. 
 
-**Estado actual**: He implementado un sistema completo de configuración **cross-platform** con testing, respaldos automáticos, manejo de dotfiles con enlaces simbólicos, y soporte automático para macOS/Linux. La configuración v3.0 está **lista para producción** y funciona en ambas plataformas automáticamente.
+**Estado actual v4.0**: He implementado un sistema completo **cross-platform** con **Jira/Confluence integration**, **enhanced macOS support**, y **work environment** con credenciales seguras. La configuración v4.0 incluye PATH completo restaurado para macOS, integración con Keychain, y keybindings consolidados.
 
 **Lo que necesito hacer AHORA**:
 
-1. **CRÍTICO**: Ejecutar `source ~/.zshrc` para cargar las nuevas funciones (ya se ejecutó `make`)
-2. **Verificar** que las nuevas funciones funcionan: `doom-test-config`, `emacs-restart`, `config-status`
-3. **Opcional**: Configurar el sistema de dotfiles con `config-init-dotfiles`
+1. **CRÍTICO**: Ejecutar `make all-safe && doom sync` para aplicar todos los cambios v4.0
+2. **macOS**: Configurar credenciales de trabajo con `security add-generic-password` (ver WORK_ENVIRONMENT.md)
+3. **Verificar**: Que el error `a i c` está resuelto (claude-code removido)
+4. **Testing**: Usar `SPC r d → [t]` para testing seguro de configuraciones
 
 **Archivos de referencia**:
 - `docs/setup/PROJECT_STATE.md` - Estado completo del proyecto
 - `docs/setup/CLAUDE.md` - Documentación del sistema  
 - `docs/reference/QUICK_REFERENCE.md` - Comandos esenciales
 
-**Funciones clave implementadas** (v3.0 Cross-Platform):
+**Características principales** (v4.0 Enhanced):
+
+### **✨ NUEVAS v4.0**:
+- **Jira/Confluence**: `SPC j` prefix, macOS Keychain integration, org-jira workflow
+- **macOS Enhanced**: PATH completo restaurado, Java/Maven/Oracle auto-config
+- **Work Environment**: ~/.zsh_work_env seguro, variables de empresa
+- **Keybindings Consolidados**: `SPC c` Claude, `SPC j` Jira, conflictos resueltos
+- **Architecture Detection**: ARM64/Intel Homebrew automático
+
+### **Funciones Cross-Platform** (v3.0+):
 - `doom-test-config` - Testing aislado de configuraciones
 - `emacs-restart` - Reinicio inteligente del daemon (cross-platform)
 - `config-status` - Estado del sistema
@@ -29,9 +39,11 @@ Hola, tengo un proyecto de literate configuration para Doom Emacs y Zsh en `~/or
 - `check-dependencies` - Verificación de herramientas faltantes
 - Detección automática de OS y configuraciones apropiadas
 
-**Cambios importantes en v3.0**:
-- ❌ **Eliminado**: APT aliases antiguos (`api`, `apr`, `apu`, etc.)
-- ❌ **Eliminado**: `download_video` y dependencias multimedia  
+**Cambios importantes en v4.0**:
+- ❌ **Eliminado**: claude-code configuration (conflictos de keybindings resueltos)
+- ✅ **Restaurado**: download_video y multimedia tools (solo Linux, condicional)
+- ✅ **Nuevo**: ~/.zsh_functions generado solo en Linux (yt-dlp, gallery-dl)
+- ✅ **Mejorado**: PATH completo en macOS con todas las herramientas perdidas  
 - ❌ **Eliminado**: Información sensible (alias `via`)
 - ✅ **Agregado**: Aliases universales que funcionan en macOS y Linux
 - ✅ **Mejorado**: Doom binary paths para macOS (`~/.emacs.d/bin/doom`)
