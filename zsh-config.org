@@ -189,7 +189,7 @@ case "$OS_TYPE" in
     # Doom Emacs (macOS uses ~/.emacs.d)
     [[ -d "$HOME/.emacs.d/bin" ]] && export PATH="$PATH:$HOME/.emacs.d/bin"
     
-    # Python local packages
+    # Python local packages and pipx
     [[ -d "$HOME/.local/bin" ]] && export PATH="$PATH:$HOME/.local/bin"
     
     # Rust/Cargo tools
@@ -206,10 +206,27 @@ case "$OS_TYPE" in
     
     # Go binaries (if GOPATH exists)
     [[ -n "$GOPATH" && -d "$GOPATH/bin" ]] && export PATH="$PATH:$GOPATH/bin"
+    
+    # pipx venvs (macOS)
+    if [[ -d "$HOME/.local/pipx/venvs" ]]; then
+      for venv_dir in "$HOME/.local/pipx/venvs"/*; do
+        [[ -d "$venv_dir/bin" ]] && export PATH="$PATH:$venv_dir/bin"
+      done
+    fi
     ;;
   linux)
     # Doom Emacs (Linux uses ~/.config/emacs)
     [[ -d "$HOME/.config/emacs/bin" ]] && export PATH="$PATH:$HOME/.config/emacs/bin"
+    
+    # Python local packages and pipx
+    [[ -d "$HOME/.local/bin" ]] && export PATH="$PATH:$HOME/.local/bin"
+    
+    # pipx venvs (Linux)
+    if [[ -d "$HOME/.local/share/pipx/venvs" ]]; then
+      for venv_dir in "$HOME/.local/share/pipx/venvs"/*; do
+        [[ -d "$venv_dir/bin" ]] && export PATH="$PATH:$venv_dir/bin"
+      done
+    fi
     
     # Linux specific paths
     [[ -d "/opt/nvim-linux-x86_64/bin" ]] && export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
@@ -1026,7 +1043,7 @@ check-dependencies() {
   done
   
   # Optional but recommended tools
-  local optional_tools=(fzf tmux direnv uv)
+  local optional_tools=(fzf tmux direnv uv pipx)
   for tool in "${optional_tools[@]}"; do
     if ! command -v "$tool" >/dev/null 2>&1; then
       missing_tools+=("$tool (optional)")
@@ -1068,6 +1085,7 @@ install-dependencies() {
   ! command -v fzf >/dev/null 2>&1 && packages+=(fzf)
   ! command -v tmux >/dev/null 2>&1 && packages+=(tmux)
   ! command -v direnv >/dev/null 2>&1 && packages+=(direnv)
+  ! command -v pipx >/dev/null 2>&1 && packages+=(pipx)
   
   if [[ ${#packages[@]} -gt 0 ]]; then
     echo "📦 Installing system packages: ${packages[*]}"

@@ -1,8 +1,8 @@
 # 📊 Project State - Literate Configuration Enhancement
 
 **Date**: 2025-06-24  
-**Version**: 4.0  
-**Status**: Production Ready - Jira/Confluence + Enhanced macOS Integration
+**Version**: 4.1  
+**Status**: Production Ready - Jira/Confluence + Enhanced macOS + pipx Support
 
 ---
 
@@ -27,13 +27,15 @@
 - **✨ NEW v4.0 - Work Environment**: Secure credential management with ~/.zsh_work_env
 - **✨ NEW v4.0 - Keybinding Consolidation**: Resolved conflicts, streamlined Claude integration
 - **✨ NEW v4.0 - Architecture Detection**: ARM64/Intel Homebrew automatic configuration
+- **✨ NEW v4.1 - pipx PATH Support**: Cross-platform dynamic detection of pipx venvs
 
-### **🚧 Current State v4.0**
+### **🚧 Current State v4.1**
 - **Jira/Confluence**: Fully integrated with macOS Keychain authentication
 - **macOS Configuration**: Complete PATH restoration and development tools setup
 - **Work Environment**: Secure credential management implemented
 - **Claude Integration**: Consolidated to claudemacs, conflicts resolved
 - **Cross-Platform**: Enhanced with architecture detection and tool-specific configurations
+- **pipx Support**: Dynamic PATH detection for pipx venvs on both macOS and Linux
 - **Documentation**: Updated with new features and comprehensive guides
 - **Need to be tangled and loaded**: Run `make all-safe && doom sync` to apply changes
 
@@ -62,6 +64,7 @@
    - **✨ v4.0**: Java/Maven/Oracle environment variables
    - **✨ v4.0**: Work environment integration with ~/.zsh_work_env
    - **✨ v4.0**: Linux-specific functions conditional generation
+   - **✨ v4.1**: pipx PATH support with dynamic venv detection (macOS/Linux)
 
 2. **`doom-config.org`** - Significant updates:
    - Removed duplicate `elsanchez/doom-reload-config` functions

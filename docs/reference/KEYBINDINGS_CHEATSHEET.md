@@ -200,6 +200,15 @@ eval "$(/usr/local/bin/brew shellenv)"
 | `~/bin/sqlcl/bin` | Oracle SQLcl | If directory exists |
 | `~/bin` | Personal binaries | If directory exists |
 | `$GOPATH/bin` | Go tools | If GOPATH set |
+| `~/.local/pipx/venvs/*/bin` | **NEW**: pipx tools | Dynamic detection |
+
+### **📁 PATH Additions (Linux)**
+| Path | Tool/Purpose | Condition |
+|------|-------------|-----------|
+| `~/.config/emacs/bin` | Doom Emacs | Linux specific |
+| `~/.local/bin` | Python local packages | If directory exists |
+| `~/.local/share/pipx/venvs/*/bin` | **NEW**: pipx tools | Dynamic detection |
+| `/opt/nvim-linux-x86_64/bin` | Neovim | If directory exists |
 
 ### **🔐 Work Environment (.zsh_work_env)**
 ```bash
