@@ -9,3 +9,4 @@ custom.el
 .zshrc
 # Secrets
 .secrets
+.envrc

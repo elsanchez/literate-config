@@ -272,6 +272,12 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 ;; Save buffer
 (global-set-key (kbd "M-s") #'save-buffer)
 
+;; macOS cmd+s and cmd+S keybindings
+(when (eq system-type 'darwin)
+  (global-set-key (kbd "s-s") #'save-buffer)           ; cmd+s for save
+  (global-set-key (kbd "s-S") #'write-file)            ; cmd+S for save as
+  (global-set-key (kbd "s-x") #'execute-extended-command)) ; cmd+x for M-x (SPC :)
+
 (use-package! org-roam
   :init
   (setq org-roam-directory (file-truename "~/org/roam"))
