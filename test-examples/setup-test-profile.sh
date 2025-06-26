@@ -57,18 +57,24 @@ create_test_profile() {
   (package-refresh-contents)
   (package-install 'transient))
 
-;; Load test runner
-(let ((test-runner-file "~/org/literate-config/test-examples/test-runner.el"))
-  (when (file-exists-p (expand-file-name test-runner-file))
-    (load-file (expand-file-name test-runner-file))
-    (message "✓ Test runner loaded")))
+;; Load fix-transient first
+(let ((fix-file "~/org/literate-config/test-examples/fix-transient.el"))
+  (when (file-exists-p (expand-file-name fix-file))
+    (load-file (expand-file-name fix-file))))
+
+;; Load simple loader
+(let ((loader-file "~/org/literate-config/test-examples/simple-loader.el"))
+  (when (file-exists-p (expand-file-name loader-file))
+    (load-file (expand-file-name loader-file))
+    (message "✓ Simple loader available")))
 
 ;; Setup keybindings
-(global-set-key (kbd "C-c t") 'test-runner-menu)
-(global-set-key (kbd "C-c C-t") 'test-runner)
+(global-set-key (kbd "C-c t") 'simple-loader-menu)
+(global-set-key (kbd "C-c h") 'simple-loader-load-hybrid)
+(global-set-key (kbd "C-c b") 'simple-loader-load-basic)
 
 ;; Message
-(message "🧪 Test profile loaded - Press C-c t for test menu")
+(message "🧪 Test profile loaded - Press C-c t for menu")
 EOF
     
     success "Test profile created at $TEST_PROFILE_DIR"
@@ -132,19 +138,31 @@ EOF
     cat > "$DOOM_TEST_DIR/config.el" << 'EOF'
 ;;; config.el -*- lexical-binding: t; -*-
 
-;; Load test runner for script menu examples
-(let ((test-runner-file "~/org/literate-config/test-examples/test-runner.el"))
-  (when (file-exists-p (expand-file-name test-runner-file))
-    (load-file (expand-file-name test-runner-file))))
+;; Ensure transient is available in Doom
+(when (fboundp 'straight-use-package)
+  (straight-use-package 'transient))
+
+(require 'transient)
+(require 'cl-lib)
+
+;; Load fix for transient issues
+(let ((fix-file "~/org/literate-config/test-examples/fix-transient.el"))
+  (when (file-exists-p (expand-file-name fix-file))
+    (load-file (expand-file-name fix-file))))
+
+;; Load simple loader
+(let ((loader-file "~/org/literate-config/test-examples/simple-loader.el"))
+  (when (file-exists-p (expand-file-name loader-file))
+    (load-file (expand-file-name loader-file))))
 
 ;; Setup keybindings
 (map! :leader
-      (:prefix ("t" . "Test")
-       :desc "Test runner menu" "t" #'test-runner-menu
-       :desc "Linus scripts" "l" #'test-linus-scripts
-       :desc "Stallman scripts" "s" #'test-stallman-scripts
-       :desc "Magit enhanced" "m" #'test-magit-enhanced-scripts
-       :desc "Python runner" "p" #'test-python-runner))
+      (:prefix ("t" . "🧪 Test")
+       :desc "Test menu" "t" #'simple-loader-menu
+       :desc "Load basic" "b" #'simple-loader-load-basic
+       :desc "Load hybrid" "h" #'simple-loader-load-hybrid
+       :desc "Load individual" "i" #'simple-loader-load-individual
+       :desc "Fix transient" "f" #'fix-doom-transient))
 
 (message "🧪 Doom test profile loaded - Use SPC t for tests")
 EOF
@@ -205,26 +223,58 @@ EOF
 # Quick test of a specific implementation
 
 IMPL=${1:-linus}
+BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 case $IMPL in
     linus|l)
         echo "🔧 Testing Linus implementation..."
-        emacs --batch --load ~/org/literate-config/test-examples/test-runner.el --eval "(test-linus-scripts)"
+        emacs --batch \
+              --load "$BASE_DIR/simple-loader.el" \
+              --eval "(simple-loader-load-individual \"linus\")"
         ;;
     stallman|s)
         echo "📚 Testing Stallman implementation..."
-        emacs --batch --load ~/org/literate-config/test-examples/test-runner.el --eval "(test-stallman-scripts)"
+        emacs --batch \
+              --load "$BASE_DIR/simple-loader.el" \
+              --eval "(simple-loader-load-individual \"stallman\")"
         ;;
     magit|m)
         echo "⚡ Testing Magit Enhanced implementation..."
-        emacs --batch --load ~/org/literate-config/test-examples/test-runner.el --eval "(test-magit-enhanced-scripts)"
+        emacs --batch \
+              --load "$BASE_DIR/simple-loader.el" \
+              --eval "(simple-loader-load-individual \"magit\")"
+        ;;
+    hybrid|h)
+        echo "🧬 Testing Hybrid implementation..."
+        emacs --batch \
+              --load "$BASE_DIR/simple-loader.el" \
+              --eval "(simple-loader-load-hybrid)"
+        ;;
+    basic|b)
+        echo "🧪 Testing Basic framework..."
+        emacs --batch \
+              --load "$BASE_DIR/simple-loader.el" \
+              --eval "(simple-loader-load-basic)"
         ;;
     python|p)
         echo "🐍 Testing Python implementation..."
-        ~/org/literate-config/examples/menus/script_runner.py --config ~/org/literate-config/test-examples/configs/test-runner.yaml
+        PYTHON_SCRIPT="$BASE_DIR/../examples/menus/script_runner.py"
+        if [ -f "$PYTHON_SCRIPT" ]; then
+            python3 "$PYTHON_SCRIPT" --config "$BASE_DIR/configs/test-runner.yaml"
+        else
+            echo "❌ Python script not found"
+        fi
         ;;
     *)
-        echo "Usage: $0 [linus|stallman|magit|python]"
+        echo "Usage: $0 [linus|stallman|magit|hybrid|basic|python]"
+        echo ""
+        echo "Available implementations:"
+        echo "  linus     - Linus Torvalds style (fast, pragmatic)"
+        echo "  stallman  - Richard Stallman style (comprehensive)"
+        echo "  magit     - Magit Enhanced style (visual)"
+        echo "  hybrid    - Hybrid implementation (best UX)"
+        echo "  basic     - Basic test framework"
+        echo "  python    - Python TUI version"
         exit 1
         ;;
 esac
@@ -282,6 +332,8 @@ create_test_cases() {
 ./quick-test.sh linus
 ./quick-test.sh stallman
 ./quick-test.sh magit
+./quick-test.sh hybrid
+./quick-test.sh basic
 ./quick-test.sh python
 
 # Launch test environments
@@ -291,20 +343,22 @@ create_test_cases() {
 
 ### Interactive Testing
 ```emacs-lisp
-;; In Emacs, load test runner
-(load-file "~/org/literate-config/test-examples/test-runner.el")
+;; Load simple loader
+(load-file "simple-loader.el")
+
+;; Test menu
+(simple-loader-menu)
 
 ;; Test individual implementations
-(test-linus-scripts)
-(test-stallman-scripts)
-(test-magit-enhanced-scripts)
-(test-python-runner)
+(simple-loader-load-individual "linus")
+(simple-loader-load-individual "stallman")
+(simple-loader-load-individual "magit")
 
-;; Setup test environment
-(test-runner-setup-test-environment)
+;; Test hybrid implementation
+(simple-loader-load-hybrid)
 
-;; Main test menu
-(test-runner-menu)
+;; Test basic framework
+(simple-loader-load-basic)
 ```
 
 ## Expected Behaviors
@@ -327,11 +381,37 @@ create_test_cases() {
 - Template-based creation
 - Tag-based organization
 
-### Python Implementation
-- Rich TUI interface
-- YAML configuration
-- Cross-platform compatibility
-- Argument validation
+### Hybrid Implementation
+- Intelligent script suggestions
+- Smart search functionality
+- Performance-optimized caching
+- Best UX from all approaches
+
+### Basic Framework
+- Test environment setup
+- Sample script creation
+- Interactive testing menu
+- Comparison capabilities
+
+## Troubleshooting
+
+### Common Issues
+- `transient-define-prefix` not found: Use fix-transient.el
+- Scripts not discovered: Check script directory and permissions
+- Performance issues: Enable caching, reduce scan directories
+
+### Solutions
+```bash
+# Fix transient issues
+emacs --load fix-transient.el --eval "(fix-doom-transient)"
+
+# Reset test environment
+rm -rf ~/.config/emacs-test-profile
+./setup-test-profile.sh
+
+# Clean start
+./quick-test.sh basic
+```
 EOF
 
     success "Test cases documentation created"
@@ -354,7 +434,8 @@ setup_test_environment() {
     echo "🎯 Quick Start:"
     echo "   ./launch-emacs-test.sh    # Launch Emacs with test profile"
     echo "   ./launch-doom-test.sh     # Launch Doom with test profile"
-    echo "   ./quick-test.sh linus     # Quick test specific implementation"
+    echo "   ./quick-test.sh basic     # Quick test basic framework"
+    echo "   ./quick-test.sh hybrid    # Quick test hybrid implementation"
     echo ""
     echo "📖 Test Cases: $SCRIPT_DIR/TEST_CASES.md"
     echo "🔗 Symlink: ~/.script-menu-tests -> $SCRIPT_DIR"
@@ -367,9 +448,6 @@ clean_test_environment() {
     rm -rf "$TEST_PROFILE_DIR"
     rm -rf "$DOOM_TEST_DIR"
     rm -f "$HOME/.script-menu-tests"
-    rm -f "$SCRIPT_DIR/launch-"*.sh
-    rm -f "$SCRIPT_DIR/quick-test.sh"
-    rm -f "$SCRIPT_DIR/TEST_CASES.md"
     
     success "Test environment cleaned"
 }

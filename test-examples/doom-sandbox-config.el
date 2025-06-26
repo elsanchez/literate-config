@@ -17,18 +17,40 @@
 
 ;; === SCRIPT MENU TESTING SETUP ===
 
-;; Load all test frameworks
+;; Ensure required packages are available
+(when (fboundp 'straight-use-package)
+  (straight-use-package 'transient))
+
+(require 'transient)
+(require 'cl-lib)
+
+;; Load all test frameworks safely
 (let ((test-dir (file-name-directory load-file-name)))
   
-  ;; Core test runner
-  (load-file (expand-file-name "test-runner.el" test-dir))
+  ;; Load transient fixes first
+  (let ((fix-file (expand-file-name "fix-transient.el" test-dir)))
+    (when (file-exists-p fix-file)
+      (load-file fix-file)
+      (when (fboundp 'fix-doom-transient)
+        (fix-doom-transient))))
   
-  ;; Advanced frameworks
-  (load-file (expand-file-name "hybrid-implementation.el" test-dir))
-  (load-file (expand-file-name "visual-dashboard.el" test-dir))
-  (load-file (expand-file-name "advanced-test-runner.el" test-dir))
+  ;; Load simple loader
+  (let ((loader-file (expand-file-name "simple-loader.el" test-dir)))
+    (when (file-exists-p loader-file)
+      (load-file loader-file)))
   
-  ;; Setup test environment
+  ;; Load test frameworks if available
+  (dolist (framework '("test-runner.el" "hybrid-implementation.el" 
+                       "visual-dashboard.el" "advanced-test-runner.el"))
+    (let ((framework-file (expand-file-name framework test-dir)))
+      (when (file-exists-p framework-file)
+        (condition-case err
+            (load-file framework-file)
+          (error
+           (message "Warning: Failed to load %s: %s" framework (error-message-string err))))))))
+
+;; Setup test environment if function exists
+(when (fboundp 'test-runner-setup-test-environment)
   (test-runner-setup-test-environment))
 
 ;; === SANDBOX-SPECIFIC CONFIGURATION ===
@@ -36,13 +58,25 @@
 ;; Quick access keybindings
 (map! :leader
       (:prefix ("t" . "🧪 Script Testing")
-       :desc "Test Menu" "t" #'test-runner-menu
-       :desc "Hybrid Scripts" "h" #'hybrid-scripts
-       :desc "Visual Dashboard" "d" #'visual-dashboard
-       :desc "Advanced Runner" "a" #'advanced-test-runner
-       :desc "Linus Scripts" "l" #'test-linus-scripts
-       :desc "Stallman Scripts" "s" #'test-stallman-scripts
-       :desc "Magit Enhanced" "m" #'test-magit-enhanced-scripts))
+       :desc "Simple Loader Menu" "t" #'simple-loader-menu
+       :desc "Load Hybrid" "h" #'simple-loader-load-hybrid
+       :desc "Load Basic" "b" #'simple-loader-load-basic
+       :desc "Fix Transient" "f" #'fix-doom-transient
+       :desc "Load Individual" "i" #'simple-loader-load-individual
+       (:when (fboundp 'test-runner-menu)
+        :desc "Test Runner Menu" "r" #'test-runner-menu)
+       (:when (fboundp 'hybrid-scripts)
+        :desc "Hybrid Scripts" "H" #'hybrid-scripts)
+       (:when (fboundp 'visual-dashboard)
+        :desc "Visual Dashboard" "d" #'visual-dashboard)
+       (:when (fboundp 'advanced-test-runner)
+        :desc "Advanced Runner" "a" #'advanced-test-runner)
+       (:when (fboundp 'test-linus-scripts)
+        :desc "Linus Scripts" "l" #'test-linus-scripts)
+       (:when (fboundp 'test-stallman-scripts)
+        :desc "Stallman Scripts" "s" #'test-stallman-scripts)
+       (:when (fboundp 'test-magit-enhanced-scripts)
+        :desc "Magit Enhanced" "m" #'test-magit-enhanced-scripts)))
 
 ;; Sandbox welcome message
 (defun sandbox-welcome ()
@@ -53,11 +87,15 @@
     (princ "============================\n\n")
     (princ "Welcome to the Script Menu Testing Sandbox!\n\n")
     (princ "🎯 Quick Start:\n")
-    (princ "  SPC t t - Main test menu\n")
-    (princ "  SPC t h - Hybrid implementation (best UX)\n")
+    (princ "  SPC t t - Simple loader menu\n")
+    (princ "  SPC t h - Load hybrid implementation (best UX)\n")
+    (princ "  SPC t b - Load basic framework\n")
+    (princ "  SPC t f - Fix transient issues\n")
+    (princ "  SPC t i - Load individual implementation\n\n")
+    (princ "🔬 Advanced (if available):\n")
+    (princ "  SPC t r - Test runner menu\n")
     (princ "  SPC t d - Visual dashboard\n")
-    (princ "  SPC t a - Advanced benchmarking\n\n")
-    (princ "🔬 Individual implementations:\n")
+    (princ "  SPC t a - Advanced benchmarking\n")
     (princ "  SPC t l - Linus Scripts (performance)\n")
     (princ "  SPC t s - Stallman Scripts (comprehensive)\n")
     (princ "  SPC t m - Magit Enhanced (visual)\n\n")

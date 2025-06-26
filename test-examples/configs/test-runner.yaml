@@ -1,0 +1,31 @@
+menus:
+  - name: "Development"
+    description: "Development and CI/CD scripts"
+    scripts:
+      - name: "deploy"
+        path: "/home/elsanchez/org/literate-config/test-examples/scripts//deploy.sh"
+        description: "Deploy application"
+        args:
+          - name: "environment"
+            description: "Target environment"
+            choices: ["dev", "staging", "prod"]
+          - name: "version"
+            description: "Version to deploy"
+            required: false
+        tags: ["deployment", "ci-cd"]
+      - name: "test"
+        path: "/home/elsanchez/org/literate-config/test-examples/scripts//test.sh"
+        description: "Run tests"
+        tags: ["testing"]
+    submenus:
+      - name: "Git Operations"
+        description: "Git-related scripts"
+        scripts:
+          - name: "git-status"
+            path: "/home/elsanchez/org/literate-config/test-examples/scripts//git-status.sh"
+            description: "Enhanced git status"
+            tags: ["git"]
+          - name: "git-cleanup"
+            path: "/home/elsanchez/org/literate-config/test-examples/scripts//git-cleanup.sh"
+            description: "Clean up branches"
+            tags: ["git", "cleanup"]
