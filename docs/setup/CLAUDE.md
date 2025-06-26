@@ -23,12 +23,13 @@ The configuration includes **claudemacs** integration for AI assistance directly
 
 ## Jira Integration (macOS)
 
-**NEW v4.0**: Complete workflow integration with secure credential management:
+**v4.2 STREAMLINED**: Simplified Jira-only workflow with secure credential management:
 - **macOS Keychain** authentication for secure credential storage
 - **org-jira** for issue management and project tracking
-- **REST client** for API interactions
+- **REST client** for general API interactions
 - **Keybindings** under `SPC j` prefix for complete workflow
 - **Working directory**: `~/org/jira/` (auto-created)
+- **v4.2 UPDATE**: Confluence integration removed for simplicity
 
 ## Essential Commands
 
@@ -164,6 +165,8 @@ make all-safe && doom sync   # Backup + tangle + sync
 
 # Manual reload (traditional)
 make && doom sync
+
+# v4.2 UPDATE: All syntax errors resolved, magit working correctly
 ```
 
 ### Initial Setup
