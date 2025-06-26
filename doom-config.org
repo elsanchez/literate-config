@@ -904,7 +904,7 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
       (when (and key (not (string-empty-p key)))
         (string-trim key)))))
 
-;; Jira/Confluence authentication functions (macOS only)
+;; Jira authentication functions (macOS only)
 (when (eq system-type 'darwin)
   (defun my/get-jira-credentials-from-keychain ()
     "Get Jira credentials from macOS Keychain."
@@ -921,17 +921,7 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
                    (not (string-empty-p (string-trim token))))
           (list (string-trim url) (string-trim email) (string-trim token))))))
   
-  (defun my/get-confluence-credentials-from-keychain ()
-    "Get Confluence credentials from macOS Keychain."
-    (when (executable-find "security")
-      (let ((url (shell-command-to-string
-                  "security find-generic-password -a work -s confluence-url -w 2>/dev/null"))
-            (token (shell-command-to-string
-                    "security find-generic-password -a work -s confluence-token -w 2>/dev/null")))
-        (when (and url token
-                   (not (string-empty-p (string-trim url)))
-                   (not (string-empty-p (string-trim token))))
-          (list (string-trim url) (string-trim token)))))))
+)
 
 ;; claudemacs - AI assistant with Secret Service integration
 (use-package! claudemacs
@@ -962,7 +952,7 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
   
   (message "✅ claudemacs configured with Secret Service integration"))
 
-;; Jira/Confluence Integration (macOS only)
+;; Jira Integration (macOS only)
 (when (eq system-type 'darwin)
   ;; Jira Integration
   (when-let ((jira-creds (my/get-jira-credentials-from-keychain)))
@@ -987,67 +977,19 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
       (unless (file-exists-p org-jira-working-dir)
         (make-directory org-jira-working-dir t))))
   
-  ;; Confluence Integration  
-  (when-let ((confluence-creds (my/get-confluence-credentials-from-keychain)))
-    (use-package! ox-confluence
-      :after ox
-      :config
-      (setq ox-confluence-url (nth 0 confluence-creds)
-            ox-confluence-space-key "TEAM"))
-    
-    (use-package! restclient
-      :mode ("\\.http\\'" . restclient-mode)
-      :config
-      (defun my/confluence-rest-template ()
-        "Insert REST client template for Confluence API."
-        (interactive)
-        (let ((url (nth 0 confluence-creds))
-              (token (nth 1 confluence-creds)))
-          (insert (format "# Confluence REST API Template
-# Base URL: %s
-# Authentication: Bearer token
-
-### Get all spaces
-GET %s/rest/api/space
-Authorization: Bearer %s
-Content-Type: application/json
-
-### Get space content
-GET %s/rest/api/space/TEAM/content
-Authorization: Bearer %s
-Content-Type: application/json
-
-### Create page
-POST %s/rest/api/content
-Authorization: Bearer %s
-Content-Type: application/json
-
-{
-  \"type\": \"page\",
-  \"title\": \"New Page Title\",
-  \"space\": {\"key\": \"TEAM\"},
-  \"body\": {
-    \"storage\": {
-      \"value\": \"<p>Page content here</p>\",
-      \"representation\": \"storage\"
-    }
-  }
-}
-"
-                          url url token url token url token))))))
+  ;; REST client for API testing
+  (use-package! restclient
+    :mode ("\\.http\\'" . restclient-mode)))
   
-  ;; Jira/Confluence keybindings (only when credentials are available)
-  (when (or (my/get-jira-credentials-from-keychain) 
-            (my/get-confluence-credentials-from-keychain))
+  ;; Jira keybindings (only when credentials are available)
+  (when (my/get-jira-credentials-from-keychain)
     (map! :leader
-          (:prefix ("j" . "jira/confluence")
+          (:prefix ("j" . "jira")
            :desc "Get Jira issues" "i" #'org-jira-get-issues
            :desc "Get Jira projects" "p" #'org-jira-get-projects  
            :desc "Create Jira issue" "c" #'org-jira-create-issue
-j          :desc "Update Jira issue" "u" #'org-jira-update-issue
+           :desc "Update Jira issue" "u" #'org-jira-update-issue
            :desc "Browse Jira issue" "b" #'org-jira-browse-issue
-           :desc "Export to Confluence" "e" #'ox-confluence-export-as-confluence
-           :desc "REST client template" "r" #'my/confluence-rest-template
            :desc "Open jira directory" "d" (lambda () (interactive) 
                                               (dired org-jira-working-dir))))))
 
@@ -1144,11 +1086,10 @@ j          :desc "Update Jira issue" "u" #'org-jira-update-issue
 (package! claudemacs
   :recipe (:host github :repo "cpoile/claudemacs"))
 
-;; Jira/Confluence packages (macOS only)
+;; Jira packages (macOS only)
 (when (eq system-type 'darwin)
   (package! jiralib2)
   (package! org-jira)
-  (package! ox-confluence)
   (package! restclient))
 
 ;; emacs-claude-code - COMMENTED OUT: Using claudemacs instead

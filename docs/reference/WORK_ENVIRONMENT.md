@@ -21,9 +21,6 @@ security add-generic-password -s jira-url -a work -w "https://yourcompany.atlass
 security add-generic-password -s jira-email -a work -w "your-email@company.com"
 security add-generic-password -s jira-token -a work -w "your-jira-api-token"
 
-# Confluence credentials
-security add-generic-password -s confluence-url -a work -w "https://yourcompany.atlassian.net"
-security add-generic-password -s confluence-token -a work -w "your-confluence-token"
 ```
 
 ## ~/.zsh_work_env Template
@@ -85,7 +82,7 @@ work-connect() {
    echo $WORK_PASSWORD  # Should show your password if stored correctly
    ```
 
-## Jira/Confluence Integration
+## Jira Integration
 
 With credentials stored in Keychain, the following features become available in Emacs:
 
@@ -95,8 +92,6 @@ With credentials stored in Keychain, the following features become available in 
 - `SPC j c` - Create Jira issue
 - `SPC j u` - Update Jira issue
 - `SPC j b` - Browse Jira issue
-- `SPC j e` - Export to Confluence
-- `SPC j r` - REST client template
 - `SPC j d` - Open jira directory
 
 ### Org-Jira Working Directory:
@@ -131,7 +126,7 @@ env | grep GOPROXY
 ```
 
 ### Emacs integration check:
-In Emacs, check if Jira/Confluence packages loaded:
+In Emacs, check if Jira packages loaded:
 - `M-x describe-variable RET jiralib2-url`
 - `SPC j` should show available keybindings
 

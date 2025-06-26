@@ -28,7 +28,7 @@
 | `SPC c b` | `claudemacs-buffer` | Send entire buffer to Claude |
 | `SPC c h` | `claudemacs-help` | Show claudemacs help and documentation |
 
-### **📋 Jira/Confluence Integration (macOS)**
+### **📋 Jira Integration (macOS)**
 | Keybinding | Command | Description |
 |------------|---------|-------------|
 | `SPC j i` | `org-jira-get-issues` | **Get Jira issues** |
@@ -36,8 +36,6 @@
 | `SPC j c` | `org-jira-create-issue` | Create new Jira issue |
 | `SPC j u` | `org-jira-update-issue` | Update current issue |
 | `SPC j b` | `org-jira-browse-issue` | Browse issue in browser |
-| `SPC j e` | `ox-confluence-export-as-confluence` | Export org to Confluence |
-| `SPC j r` | `my/confluence-rest-template` | Insert REST client template |
 | `SPC j d` | Open jira directory | Browse ~/org/jira/ directory |
 
 ---

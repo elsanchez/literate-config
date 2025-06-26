@@ -21,13 +21,12 @@ The configuration includes **claudemacs** integration for AI assistance directly
 - **Cross-platform compatibility**: All Claude-related functions include existence checks
 - **v4.0 Update**: Removed conflicting claude-code configuration for clean operation
 
-## Jira/Confluence Integration (macOS)
+## Jira Integration (macOS)
 
 **NEW v4.0**: Complete workflow integration with secure credential management:
 - **macOS Keychain** authentication for secure credential storage
 - **org-jira** for issue management and project tracking
-- **ox-confluence** for seamless export from org-mode to Confluence
-- **REST client** templates for API interactions
+- **REST client** for API interactions
 - **Keybindings** under `SPC j` prefix for complete workflow
 - **Working directory**: `~/org/jira/` (auto-created)
 
@@ -411,7 +410,7 @@ SPC c h          # Claude help
 # Clean loading on all systems without errors
 ```
 
-### Jira/Confluence Workflow (macOS)
+### Jira Workflow (macOS)
 ```bash
 # From Emacs (SPC j prefix)
 SPC j i          # Get Jira issues
@@ -419,8 +418,6 @@ SPC j p          # Get Jira projects
 SPC j c          # Create Jira issue
 SPC j u          # Update current issue
 SPC j b          # Browse issue in browser
-SPC j e          # Export org to Confluence
-SPC j r          # REST client template
 SPC j d          # Open jira directory
 
 # Setup credentials in Keychain first

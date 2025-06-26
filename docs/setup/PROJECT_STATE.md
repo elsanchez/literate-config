@@ -22,7 +22,7 @@
 - **🆕 Universal Package Management**: Cross-platform aliases (brew/apt) with automatic detection
 - **🆕 Simplified Daemon Management**: systemd with manual fallbacks for all platforms
 - **🆕 Security Enhancements**: Removed sensitive information and Linux-only dependencies
-- **✨ NEW v4.0 - Jira/Confluence Integration**: Complete workflow with macOS Keychain authentication
+- **✨ NEW v4.0 - Jira Integration**: Complete workflow with macOS Keychain authentication
 - **✨ NEW v4.0 - Enhanced macOS Support**: Full PATH restoration, Java/Maven/Oracle tools integration
 - **✨ NEW v4.0 - Work Environment**: Secure credential management with ~/.zsh_work_env
 - **✨ NEW v4.0 - Keybinding Consolidation**: Resolved conflicts, streamlined Claude integration
@@ -30,7 +30,7 @@
 - **✨ NEW v4.1 - pipx PATH Support**: Cross-platform dynamic detection of pipx venvs
 
 ### **🚧 Current State v4.1**
-- **Jira/Confluence**: Fully integrated with macOS Keychain authentication
+- **Jira**: Fully integrated with macOS Keychain authentication
 - **macOS Configuration**: Complete PATH restoration and development tools setup
 - **Work Environment**: Secure credential management implemented
 - **Claude Integration**: Consolidated to claudemacs, conflicts resolved
@@ -70,11 +70,11 @@
    - Removed duplicate `elsanchez/doom-reload-config` functions
    - Added enhanced reload with testing options (test/stage/direct/cancel)
    - **✨ v4.0**: Removed conflicting claude-code configuration
-   - **✨ v4.0**: Complete Jira/Confluence integration with macOS Keychain
+   - **✨ v4.0**: Complete Jira integration with macOS Keychain
    - **✨ v4.0**: Enhanced claudemacs configuration
-   - **✨ v4.0**: Jira packages (jiralib2, org-jira, ox-confluence, restclient)
+   - **✨ v4.0**: Jira packages (jiralib2, org-jira, restclient)
    - **✨ v4.0**: Work environment authentication functions
-   - **✨ v4.0**: Consolidated keybindings (SPC c = Claude, SPC j = Jira/Confluence)
+   - **✨ v4.0**: Consolidated keybindings (SPC c = Claude, SPC j = Jira)
    - Implemented testing functions for isolated environments
    - Added staging capabilities for manual testing
    - Enhanced daemon restart with multiple methods
