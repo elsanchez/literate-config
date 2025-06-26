@@ -1,163 +1,370 @@
-# Script Menu Examples
+# 🚀 Script Menu Examples
 
-This directory contains different implementations of script management interfaces, each with their own philosophy and approach.
+Colección completa de ejemplos de interfaces para ejecutar scripts, desde Emacs Lisp hasta Python TUI moderno con **Textual**.
 
-## Files
+## 📁 Estructura de Ejemplos
 
-### `linustorv.el` - Linus Torvalds Style
-- **Philosophy**: Pragmatic, no-nonsense approach
-- **Features**: Direct script execution, minimal configuration
-- **Usage**: `M-x linus-scripts`
-- **Target**: Developers who want things to just work
-
-```emacs-lisp
-(load-file "examples/menus/linustorv.el")
-(global-set-key (kbd "C-c x") 'linus-scripts)
+```
+examples/menus/
+├── 📝 Emacs Implementations
+│   ├── stallman.el           # Richard Stallman style (comprehensive)
+│   ├── linustorv.el         # Linus Torvalds style (pragmatic)
+│   └── magit-enhanced.el    # Magit style (visual)
+│
+├── 🐍 Python Implementations  
+│   ├── script_runner.py           # Rich TUI version
+│   ├── interactive_script_runner.py  # Enhanced Rich with components
+│   └── textual_script_runner.py      # Modern Textual with Command Palette
+│
+├── 🧪 Testing & Demos
+│   ├── test-interactive-runner.sh    # Rich version tester
+│   ├── test-textual-runner.sh       # Textual version tester
+│   └── demo-scripts/                # Sample scripts for testing
+│
+└── venv/                    # Python virtual environment
 ```
 
-### `stallman.el` - Richard Stallman Style  
-- **Philosophy**: Freedom-focused, comprehensive documentation
-- **Features**: Extensive help, user freedom emphasis, GPL compliance
-- **Usage**: `M-x stallman-scripts`
-- **Target**: Users who value software freedom and comprehensive features
+## 🎯 Comparación de Implementaciones
 
-```emacs-lisp
-(load-file "examples/menus/stallman.el")
-(global-set-key (kbd "C-c s") 'stallman-scripts)
+| Feature | Stallman.el | Linus.el | Magit.el | Rich Python | **Textual Python** |
+|---------|-------------|----------|----------|-------------|----------------|
+| **Philosophy** | Comprehensive | Fast & Direct | Visual | Interactive | **Modern TUI** |
+| **UI Style** | Documentation | Minimal | Git-like | Rich Text | **Full App** |
+| **Components** | Help System | Quick Menu | Tree View | Widgets | **Advanced Widgets** |
+| **Customization** | Extensive | Minimal | Moderate | Config File | **YAML + UI** |
+| **Learning Curve** | High | Low | Medium | Medium | **Medium-High** |
+| **Best For** | Power Users | Quick Tasks | Git Users | CLI Apps | **Desktop-like** |
+
+## 🎨 UI Components Demo
+
+### 📝 Text Input
+```yaml
+- name: server_name
+  type: text
+  description: Server hostname
+  default: "localhost"
 ```
 
-### `magit-enhanced.el` - Advanced Magit-Style Interface
-- **Philosophy**: Visual exploration, dynamic discovery
-- **Features**: 
-  - Auto-discovery of scripts with metadata parsing
-  - Dynamic menu generation
-  - Template-based script creation
-  - Tag-based organization
-- **Usage**: `M-x magit-enhanced-scripts`
-- **Target**: Power users who want visual script management
-
-```emacs-lisp
-(load-file "examples/menus/magit-enhanced.el")
-(global-set-key (kbd "C-c M-s") 'magit-enhanced-scripts)
+### 🔘 Radio Buttons (Single Selection)
+```yaml
+- name: environment
+  type: radio
+  description: Target environment
+  choices: [development, staging, production]
+  default: development
 ```
 
-### `script_runner.py` - Python TUI Alternative
-- **Philosophy**: Cross-platform, configuration-driven
-- **Features**:
-  - YAML-based configuration
-  - Rich TUI interface (when available)
-  - Auto-discovery of scripts
-  - Argument collection with validation
-  - Visual menu tree exploration
+### ☑️ Checkboxes (Boolean Toggle)
+```yaml
+- name: backup_enabled
+  type: checkbox
+  description: Create backup before deployment
+  default: true
+```
 
+### 📋 Multi-Select Lists
+```yaml
+- name: features
+  type: multi_select
+  description: Features to enable
+  choices: [auth, analytics, caching, cdn, monitoring]
+  default: [auth, monitoring]
+```
+
+### 🎚️ Sliders (Numeric Range)
+```yaml
+- name: parallel_jobs
+  type: slider
+  description: Number of parallel jobs
+  min_value: 1
+  max_value: 16
+  step: 1
+  default: 4
+```
+
+### 🔢 Number Input
+```yaml
+- name: timeout
+  type: number
+  description: Timeout in seconds
+  min_value: 30
+  max_value: 3600
+  default: 300
+```
+
+### 📂 File/Directory Selection
+```yaml
+- name: config_file
+  type: file
+  description: Configuration file
+  file_extensions: [.yaml, .yml, .json]
+  required: false
+```
+
+### 📋 Select Dropdown
+```yaml
+- name: notification_method
+  type: select
+  description: Notification method
+  choices: [email, slack, discord, webhook, none]
+  default: email
+```
+
+## 🚀 Quick Start
+
+### 1. **Rich Python Version** (Colorful CLI)
 ```bash
-# Install dependencies
-pip install rich pyyaml
-
-# Run directly
-./script_runner.py
-
-# Or discover scripts
-./script_runner.py --discover
+cd examples/menus
+source venv/bin/activate
+./test-interactive-runner.sh
 ```
 
-## Script Metadata Format
+**Features:**
+- Rich text interface with colors
+- Interactive prompts
+- All UI components
+- Command preview
+- Real-time execution
 
-All implementations support extracting metadata from script comments:
-
+### 2. **Textual Python Version** (Modern TUI) ⭐ **RECOMENDADO**
 ```bash
-#!/bin/bash
-# Description: Deploy application to target environment
-# Tags: deployment, ci-cd, production
-# Help: This script deploys the application using Docker
-#       Supports multiple environments and rollback
-# @arg environment: Target environment (dev/staging/prod)
-# @arg version: Version to deploy (optional)
-
-# Your script content here
+cd examples/menus
+source venv/bin/activate
+./test-textual-runner.sh
 ```
 
-## Configuration Examples
+**Features:**
+- Full-screen TUI application
+- **VS Code-style command palette** (Ctrl+P) 🎯
+- **Tabbed interface** (Scripts, Statistics, Logs)
+- **Tree navigation** with menus and submenus
+- **Modal dialogs** for script configuration
+- **Real-time logs** and execution output
+- **Advanced widgets**: sliders, radio buttons, checkboxes, multi-select
 
-### Python Runner Configuration (`~/.config/script-runner.yaml`)
+### 3. **Emacs Versions** (For Emacs users)
+```bash
+cd test-examples
+./launch-profiles.sh doom    # Doom Emacs sandbox
+./launch-profiles.sh vanilla # Vanilla Emacs
+```
 
+## 🎮 Interactive Components Testing
+
+### **Command Palette Demo** (Textual only) ⭐
+1. Start Textual version: `./test-textual-runner.sh`
+2. Press `Ctrl+P` to open command palette
+3. Try these searches:
+   - `deploy` - Find deployment scripts
+   - `tag:database` - Filter by database tag
+   - `service` - Find service management
+   - `reload` - System commands
+   - `quit` - Exit application
+
+### **All UI Components Demo**
+1. Run Textual version
+2. Select "advanced-deploy" script from table
+3. Experience each component:
+   - **Radio**: Choose environment (development/staging/production)
+   - **Multi-select**: Toggle features with numbers, type 'done' to finish
+   - **Checkbox**: Enable/disable backup (toggle switch)
+   - **Slider**: Adjust parallel jobs (1-16) with visual feedback
+   - **Number**: Set timeout value (30-3600 seconds)
+   - **File**: Enter file path (validates extensions)
+   - **Select**: Pick notification method from dropdown
+
+### **Real-time Execution**
+1. Configure a script with all options
+2. Click "Preview Command" to see generated bash command
+3. Execute to see real-time output in modal window
+4. All scripts are in demo mode (100% safe to run)
+
+## 🛠️ Creating Custom Scripts
+
+### **YAML Configuration Example:**
 ```yaml
 menus:
-  - name: "Development"
-    description: "Development scripts"
+  - name: "My Scripts"
+    description: "Custom script collection"
     scripts:
-      - name: "deploy"
-        path: "~/scripts/deploy.sh"
-        description: "Deploy application"
+      - name: "my-deployment"
+        path: "./scripts/deploy.sh"
+        description: "Deploy my application"
+        category: "Deployment"
         args:
-          - name: "environment"
-            description: "Target environment"
-            choices: ["dev", "staging", "prod"]
-          - name: "version"
-            description: "Version to deploy"
-            required: false
-        tags: ["deployment", "ci-cd"]
-    submenus:
-      - name: "Git Operations"
-        description: "Git-related scripts"
-        scripts:
-          - name: "git-cleanup"
-            path: "~/scripts/git-cleanup.sh"
-            description: "Clean up git branches"
-            tags: ["git", "cleanup"]
+          - name: target
+            type: radio
+            description: Target server
+            choices: [dev, staging, prod]
+            default: dev
+          - name: features
+            type: multi_select
+            description: Features to enable
+            choices: [ssl, cdn, monitoring]
+          - name: dry_run
+            type: checkbox
+            description: Dry run mode
+            default: true
+          - name: workers
+            type: slider
+            description: Number of workers
+            min_value: 1
+            max_value: 10
+            step: 1
+            default: 4
+        tags: [deployment, production]
+        help_text: "Deploys application with selected features"
+        preview_mode: true  # Safe testing mode
 ```
 
-## Integration with Doom Emacs
+### **Script Argument Parsing:**
+```bash
+#!/bin/bash
+# Your script: deploy.sh
 
-Add to your `config.el`:
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --target)
+            TARGET="$2"
+            shift 2
+            ;;
+        --features)
+            FEATURES+=("$2")
+            shift 2
+            ;;
+        --dry_run)
+            DRY_RUN=true
+            shift
+            ;;
+        --workers)
+            WORKERS="$2"
+            shift 2
+            ;;
+        *)
+            echo "Unknown argument: $1"
+            shift
+            ;;
+    esac
+done
 
-```emacs-lisp
-;; Load the desired script menu implementation
-(load-file "~/org/literate-config/examples/menus/linustorv.el")
-
-;; Add to your leader key map
-(map! :leader
-      (:prefix ("x" . "Scripts")
-       :desc "Linus scripts" "l" #'linus-scripts
-       :desc "Stallman scripts" "s" #'stallman-scripts
-       :desc "Enhanced scripts" "e" #'magit-enhanced-scripts))
+echo "🚀 Deploying to: $TARGET"
+echo "📦 Features: ${FEATURES[*]}"
+echo "🔍 Dry run: $DRY_RUN"
+echo "👥 Workers: $WORKERS"
 ```
 
-## Creating Your Own Implementation
+## 🎯 Best Practices
 
-1. **Choose your philosophy**: Minimalist, comprehensive, or visual
-2. **Define your interface**: Transient, hydra, or custom
-3. **Implement core functions**:
-   - Script discovery
-   - Execution with arguments
-   - Menu navigation
-   - Configuration management
+### **For UI Design:**
+- Use **radio buttons** for mutually exclusive choices
+- Use **checkboxes** for boolean flags
+- Use **multi-select** for independent options  
+- Use **sliders** for numeric ranges with visual feedback
+- Use **select** for single choice from many options
+- Use **text input** for free-form data
+- Use **file/directory** for path selection
 
-4. **Add metadata support**:
-   - Parse script comments
-   - Extract arguments and help
-   - Support tags and categories
+### **For Script Integration:**
+- Always provide sensible defaults
+- Add help text for complex options
+- Use `preview_mode: true` during development
+- Group related options logically
+- Validate inputs in your scripts
+- Handle errors gracefully
 
-## Performance Considerations
+### **For User Experience:**
+- Keep argument names short but descriptive
+- Provide clear descriptions and help text
+- Use consistent naming conventions
+- Test with real use cases
+- Document expected behavior
+- Use categories to organize scripts
 
-- **Caching**: Cache script discovery results
-- **Lazy loading**: Load script metadata on demand  
-- **Async execution**: Don't block Emacs during script execution
-- **Memory usage**: Limit parsed content size
+## 🔧 Development
 
-## Security Notes
+### **Environment Setup:**
+```bash
+# Create virtual environment
+cd examples/menus
+python3 -m venv venv
+source venv/bin/activate
 
-- Always validate script paths
-- Confirm execution of potentially dangerous scripts
-- Consider sandboxing for untrusted scripts
-- Use proper shell escaping for arguments
+# Install dependencies with uv (faster)
+uv pip install rich pyyaml textual
 
-## Contributing
+# Or with pip
+pip install rich pyyaml textual
+```
 
-Each implementation demonstrates different approaches:
-- **Minimalist**: Focus on core functionality
-- **Comprehensive**: Full feature set with documentation
-- **Visual**: Rich interface with exploration
-- **Cross-platform**: Works outside Emacs
+### **Testing:**
+```bash
+# Test Rich version
+python3 interactive_script_runner.py --demo
+python3 interactive_script_runner.py
 
-Choose the approach that fits your needs and extend as required.
+# Test Textual version (recommended)
+python3 textual_script_runner.py --demo
+python3 textual_script_runner.py
+
+# Test with custom config
+python3 textual_script_runner.py --config my-config.yaml
+```
+
+### **Keyboard Shortcuts (Textual):**
+- **Ctrl+P**: Command Palette (like VS Code)
+- **Ctrl+R**: Reload Configuration
+- **Ctrl+Q**: Quit Application  
+- **F1**: Show Help
+- **Escape**: Close modals/Cancel
+- **Enter**: Execute/Confirm
+- **Tab**: Navigate between widgets
+
+## 🎨 Screenshots & Demo
+
+### **Textual Command Palette:**
+```
+┌─ Command Palette ─────────────────────────────────────┐
+│ > deploy                                              │
+├───────────────────────────────────────────────────────┤
+│ 🚀 Run advanced-deploy - Advanced deployment with... │
+│ 🚀 Run database-operations - Database backup and...  │
+│ 🏷️ Tag: deployment                                   │
+│ 🏠 Go to main menu                                   │
+└───────────────────────────────────────────────────────┘
+```
+
+### **Script Configuration Modal:**
+```
+┌─ Configure: advanced-deploy ──────────────────────────┐
+│ Advanced deployment with comprehensive options        │
+│                                                       │
+│ ┌─ Environment ────────────────────────────────────┐ │
+│ │ ● development  ○ staging  ○ production          │ │
+│ └─────────────────────────────────────────────────── │
+│                                                       │
+│ ┌─ Features (multi-select) ────────────────────────┐ │  
+│ │ ☑ auth  ☑ monitoring  ☐ caching  ☐ cdn        │ │
+│ └─────────────────────────────────────────────────── │
+│                                                       │
+│ ┌─ Parallel Jobs ──────────────────────────────────┐ │
+│ │ ████████░░░░░░░░ 4                              │ │
+│ └─────────────────────────────────────────────────── │
+│                                                       │
+│ [ Cancel ]  [ Preview Command ]  [ Execute ]         │
+└───────────────────────────────────────────────────────┘
+```
+
+## 📚 Further Reading
+
+- **Rich Documentation**: https://rich.readthedocs.io/
+- **Textual Documentation**: https://textual.textualize.io/
+- **PyYAML Documentation**: https://pyyaml.org/
+- **Command Palette Pattern**: Inspired by VS Code Command Palette
+
+---
+
+🎉 **Ready to create amazing script interfaces!** 
+
+**Start with the Textual version** para la experiencia más moderna, o usa Rich para herramientas de línea de comandos más simples.
+
+**Command Palette** es el feature estrella - presiona `Ctrl+P` y busca cualquier script o comando! 🎯

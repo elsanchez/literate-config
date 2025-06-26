@@ -41,6 +41,8 @@
 ./quick-test.sh linus
 ./quick-test.sh stallman
 ./quick-test.sh magit
+./quick-test.sh hybrid
+./quick-test.sh basic
 ./quick-test.sh python
 
 # Launch test environments
@@ -50,20 +52,22 @@
 
 ### Interactive Testing
 ```emacs-lisp
-;; In Emacs, load test runner
-(load-file "~/org/literate-config/test-examples/test-runner.el")
+;; Load simple loader
+(load-file "simple-loader.el")
+
+;; Test menu
+(simple-loader-menu)
 
 ;; Test individual implementations
-(test-linus-scripts)
-(test-stallman-scripts)
-(test-magit-enhanced-scripts)
-(test-python-runner)
+(simple-loader-load-individual "linus")
+(simple-loader-load-individual "stallman")
+(simple-loader-load-individual "magit")
 
-;; Setup test environment
-(test-runner-setup-test-environment)
+;; Test hybrid implementation
+(simple-loader-load-hybrid)
 
-;; Main test menu
-(test-runner-menu)
+;; Test basic framework
+(simple-loader-load-basic)
 ```
 
 ## Expected Behaviors
@@ -86,8 +90,34 @@
 - Template-based creation
 - Tag-based organization
 
-### Python Implementation
-- Rich TUI interface
-- YAML configuration
-- Cross-platform compatibility
-- Argument validation
+### Hybrid Implementation
+- Intelligent script suggestions
+- Smart search functionality
+- Performance-optimized caching
+- Best UX from all approaches
+
+### Basic Framework
+- Test environment setup
+- Sample script creation
+- Interactive testing menu
+- Comparison capabilities
+
+## Troubleshooting
+
+### Common Issues
+- `transient-define-prefix` not found: Use fix-transient.el
+- Scripts not discovered: Check script directory and permissions
+- Performance issues: Enable caching, reduce scan directories
+
+### Solutions
+```bash
+# Fix transient issues
+emacs --load fix-transient.el --eval "(fix-doom-transient)"
+
+# Reset test environment
+rm -rf ~/.config/emacs-test-profile
+./setup-test-profile.sh
+
+# Clean start
+./quick-test.sh basic
+```

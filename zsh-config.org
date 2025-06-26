@@ -117,10 +117,10 @@ if [[ ${#missing_plugins[@]} -gt 0 ]]; then
         echo "  git clone https://github.com/zsh-users/zsh-syntax-highlighting.git \$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
         ;;
       direnv)
-        echo "  pi direnv  # or: curl -sfL https://direnv.net/install.sh | bash"
+        echo "direnv: curl -sfL https://direnv.net/install.sh | bash"
         ;;
       uv)
-        echo "  curl -LsSf https://astral.sh/uv/install.sh | sh"
+        echo "uv:  curl -LsSf https://astral.sh/uv/install.sh | sh"
         ;;
     esac
   done
@@ -237,23 +237,16 @@ esac
 case "$OS_TYPE" in
   macos)
     # macOS specific aliases
-    alias pi='brew install'
-    alias pr='brew uninstall'
-    alias ps='brew search'
-    alias pu='brew update && brew upgrade'
-    alias pc='brew cleanup'
-    alias pinfo='brew info'
-    alias restart-audio='sudo killall coreaudiod'
     alias gh="history | grep"
     # Use native macOS 'open' command for file manager
     ;;
   linux)
     # Linux specific aliases
-    alias pi='sudo apt install'
-    alias pr='sudo apt remove'
-    alias ps='apt search'
-    alias pu='sudo apt update && sudo apt upgrade'
-    alias pc='sudo apt autoremove'
+    alias api='sudo apt-get install'
+    alias apr='sudo apt-get remove'
+    alias aps='apt-cache search'
+    alias apu='sudo apt-get update && sudo apt-get upgrade'
+    alias apc='sudo apt-get autoremove'
     alias pinfo='apt show'
     alias restart-audio='systemctl --user restart pipewire pipewire-pulse wireplumber || (pulseaudio -k && pulseaudio --start)'
     alias open='xdg-open'
@@ -276,14 +269,25 @@ fi
 alias ll='ls -lh --color=auto'
 alias la='ls -lAh --color=auto'
 alias gs='git status'
-alias reload!='source ~/.zshrc'
-alias please='sudo'
-alias cls='clear'
 
-# APT package management (short form)
-# Cross-platform package management aliases (moved below after OS detection)
-alias pbcopy="xsel --clipboard --input"
-# Cross-platform aliases (moved below after OS detection)
+
+if [[ "$OS_TYPE" == "macos" ]]; then
+  case "$(uname -m)" in
+    arm64)
+      # Apple Silicon (M1/M2/M3) - Homebrew in /opt/homebrew
+      if [[ -f "/opt/homebrew/bin/brew" ]]; then
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+      fi
+      ;;
+    x86_64)
+      if command -v xsel >/dev/null 2>&1; then
+        alias pbcopy="xsel --clipboard --input"
+      else
+        alias pbcopy="xsel --clipboard --input"
+       fi
+      ;;
+  esac
+fi
 
 # General options
 setopt correct

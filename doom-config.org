@@ -277,6 +277,36 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
   (global-set-key (kbd "s-s") #'save-buffer)           ; cmd+s for save
   (global-set-key (kbd "s-S") #'write-file)            ; cmd+S for save as
   (global-set-key (kbd "s-x") #'execute-extended-command)) ; cmd+x for M-x (SPC :)
+(use-package! transient
+  :defer t)
+
+(after! transient
+  (transient-define-prefix elsanchez/window-resize-transient ()
+    "Window resize and management operations."
+    :transient-suffix     'transient--do-stay
+    :transient-non-suffix 'transient--do-warn
+    [["Resize"
+    ("h" "← width" evil-window-decrease-width :transient t)
+    ("j" "↓ height" evil-window-increase-height :transient t)
+    ("k" "↑ height" evil-window-decrease-height :transient t)
+    ("l" "→ width" evil-window-increase-width :transient t)]
+    ["Move"
+    ("H" "← window" evil-window-move-far-left :transient t)
+    ("J" "↓ window" evil-window-move-very-bottom :transient t)
+    ("K" "↑ window" evil-window-move-very-top :transient t)
+    ("L" "→ window" evil-window-move-far-right :transient t)]
+    ["Split & Manage"
+    ("s" "split below" evil-window-split :transient t)
+    ("v" "split right" evil-window-vsplit :transient t)
+    ("d" "delete" evil-window-delete :transient t)
+    ("o" "delete others" delete-other-windows :transient t)
+    ("=" "balance" balance-windows :transient t)]]
+    [["Navigate"
+    ("w" "next window" evil-window-next :transient t)
+    ("W" "prev window" evil-window-prev :transient t)]
+    ["Exit"
+    ("q" "quit" transient-quit-one)
+    ("<escape>" "quit" transient-quit-one)]]))
 
 (use-package! org-roam
   :init
@@ -1014,7 +1044,7 @@ Content-Type: application/json
            :desc "Get Jira issues" "i" #'org-jira-get-issues
            :desc "Get Jira projects" "p" #'org-jira-get-projects  
            :desc "Create Jira issue" "c" #'org-jira-create-issue
-           :desc "Update Jira issue" "u" #'org-jira-update-issue
+j          :desc "Update Jira issue" "u" #'org-jira-update-issue
            :desc "Browse Jira issue" "b" #'org-jira-browse-issue
            :desc "Export to Confluence" "e" #'ox-confluence-export-as-confluence
            :desc "REST client template" "r" #'my/confluence-rest-template
@@ -1023,33 +1053,6 @@ Content-Type: application/json
 
 
 
-;; Window resize transient for easy window management
-(transient-define-prefix elsanchez/window-resize-transient ()
-  "Window resize and management operations."
-  :transient-suffix     'transient--do-stay
-  :transient-non-suffix 'transient--do-warn
-  [["Resize"
-  ("h" "← width" evil-window-decrease-width :transient t)
-  ("j" "↓ height" evil-window-increase-height :transient t)
-  ("k" "↑ height" evil-window-decrease-height :transient t)
-  ("l" "→ width" evil-window-increase-width :transient t)]
-  ["Move"
-  ("H" "← window" evil-window-move-far-left :transient t)
-  ("J" "↓ window" evil-window-move-very-bottom :transient t)
-  ("K" "↑ window" evil-window-move-very-top :transient t)
-  ("L" "→ window" evil-window-move-far-right :transient t)]
-  ["Split & Manage"
-  ("s" "split below" evil-window-split :transient t)
-  ("v" "split right" evil-window-vsplit :transient t)
-  ("d" "delete" evil-window-delete :transient t)
-  ("o" "delete others" delete-other-windows :transient t)
-  ("=" "balance" balance-windows :transient t)]]
-  [["Navigate"
-  ("w" "next window" evil-window-next :transient t)
-  ("W" "prev window" evil-window-prev :transient t)]
-  ["Exit"
-  ("q" "quit" transient-quit-one)
-  ("<escape>" "quit" transient-quit-one)]])
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
@@ -1134,6 +1137,7 @@ Content-Type: application/json
 (package! ws-butler :recipe (:host github :repo "lewang/ws-butler"))
 (package! org-roam)
 (package! apheleia)
+(package! eat)
 
 
 ;; claudemacs - AI assistant integrated with Emacs

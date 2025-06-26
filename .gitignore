@@ -10,3 +10,9 @@ custom.el
 # Secrets
 .secrets
 .envrc
+
+# Examples and test directories
+examples/
+test-examples/
+
+
