@@ -890,10 +890,9 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 (set-fontset-font t 'unicode (font-spec :family "JuliaMono"))
 
 ;; EAT terminal configuration
-(add-hook 'claude-code-start-hook
-          (lambda ()
-            (setq-local eat-minimum-latency 0.033
-                        eat-maximum-latency 0.1)))
+(after! eat
+  (setq eat-minimum-latency 0.033
+        eat-maximum-latency 0.1))
 
 ;; Function to get API key from Secret Service
 (defun my/get-anthropic-api-key-from-secret-service ()
@@ -920,8 +919,6 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
                    (not (string-empty-p (string-trim email)))
                    (not (string-empty-p (string-trim token))))
           (list (string-trim url) (string-trim email) (string-trim token))))))
-  
-)
 
 ;; claudemacs - AI assistant with Secret Service integration
 (use-package! claudemacs
