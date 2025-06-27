@@ -72,12 +72,11 @@ declare -a available_plugins=()
 declare -a missing_plugins=()
 
 # Define desired plugins
-desired_plugins=(git zsh-autosuggestions zsh-syntax-highlighting direnv uv tmux)
+desired_plugins=(git zsh-autosuggestions zsh-syntax-highlighting)
 
 for plugin in "${desired_plugins[@]}"; do
   case $plugin in
-    git|tmux) 
-      # Built-in plugins
+    git) 
       available_plugins+=($plugin)
       ;;
     zsh-autosuggestions)
@@ -89,13 +88,6 @@ for plugin in "${desired_plugins[@]}"; do
       ;;
     zsh-syntax-highlighting)
       if [[ -d "$ZSH/custom/plugins/zsh-syntax-highlighting" ]]; then
-        available_plugins+=($plugin)
-      else
-        missing_plugins+=($plugin)
-      fi
-      ;;
-    direnv|uv)
-      if command -v $plugin >/dev/null 2>&1; then
         available_plugins+=($plugin)
       else
         missing_plugins+=($plugin)
