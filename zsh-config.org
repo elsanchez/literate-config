@@ -243,6 +243,15 @@ case "$OS_TYPE" in
     alias pinfo='apt show'
     alias restart-audio='systemctl --user restart pipewire pipewire-pulse wireplumber || (pulseaudio -k && pulseaudio --start)'
     alias open='xdg-open'
+    
+    # Clipboard aliases for macOS compatibility
+    if command -v xclip >/dev/null 2>&1; then
+      alias pbcopy='xclip -selection clipboard'
+      alias pbpaste='xclip -selection clipboard -o'
+    elif command -v xsel >/dev/null 2>&1; then
+      alias pbcopy='xsel --clipboard --input'
+      alias pbpaste='xsel --clipboard --output'
+    fi
     ;;
   ,*)
     # Default/unknown OS
@@ -273,17 +282,16 @@ if [[ "$OS_TYPE" == "macos" ]]; then
       fi
       ;;
     x86_64)
-      if command -v xsel >/dev/null 2>&1; then
-        alias pbcopy="xsel --clipboard --input"
-      else
-        alias pbcopy="xsel --clipboard --input"
-       fi
+      # Intel Mac - Homebrew in /usr/local
+      if [[ -f "/usr/local/bin/brew" ]]; then
+        eval "$(/usr/local/bin/brew shellenv)"
+      fi
       ;;
   esac
 fi
 
 # General options
-setopt correct
+#setopt correct
 setopt autocd
 setopt extended_glob
 
