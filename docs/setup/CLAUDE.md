@@ -9,6 +9,7 @@ This is a literate configuration repository that uses Org-mode to document and g
 - **Zsh shell** (`zsh-config.org` → `~/.zshrc`)
 - **Tmux** (`tmux-config.org` → `~/.config/tmux/tmux.conf.local` or `~/.tmux.conf.local`)
 - **Custom scripts** (`scripts.org` → `~/.local/bin/`)
+- **YAML Parameter Runner** (`examples/yaml-param-runner.py` → advanced script execution with parameter validation)
 
 The repository follows a literate programming approach where configuration is documented in `.org` files and "tangled" to generate actual config files.
 
@@ -142,6 +143,24 @@ emacs-frame
 emacs-kill
 ```
 
+### YAML Parameter Runner (NEW v4.3)
+```bash
+# Create example configuration
+./examples/yaml-param-runner.py --example
+
+# List available scripts
+./examples/yaml-param-runner.py config.yaml --list
+
+# Execute script with interactive parameters
+./examples/yaml-param-runner.py config.yaml --script deploy
+
+# Example YAML configuration supports:
+# - text, number, select, boolean parameter types
+# - Parameter validation (min/max, patterns, choices)
+# - Default values and help text
+# - Named and positional argument styles
+```
+
 ### After Making Changes
 ```bash
 # From Makefile (recommended for safety)
@@ -203,6 +222,7 @@ setup-literate-config  # This will install dependencies and setup everything
   - macOS: `~/.tmux.conf.local` with pbcopy clipboard integration
   - Platform-specific paths for plugins and status scripts
 - **scripts.org**: Utility scripts like `focus_or_launch.sh` for window management
+- **examples/yaml-param-runner.py**: Advanced script runner with YAML configuration and parameter validation
 
 ### Enhanced Features
 
@@ -251,6 +271,12 @@ setup-literate-config  # This will install dependencies and setup everything
 - Dependency management: `check-dependencies`, `install-dependencies`, `setup-literate-config`
 - Tmux utilities: `tms()`, `tmgo()`, `tmkill()` (with dependency checking)
 - File utilities: `mkcd()`, `up()`, `e()` (cross-platform file operations)
+
+#### YAML Parameter Runner Functions
+- Script execution: Execute bash scripts with YAML-configured parameters
+- Parameter validation: Comprehensive validation for text, number, select, and boolean types
+- Interactive collection: Prompt users for parameter values with defaults and help text
+- Configuration management: YAML-based script configuration with examples and validation rules
 
 ### Error Recovery
 If configuration deployment fails:

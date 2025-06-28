@@ -114,6 +114,13 @@
 | `reload!` | Reload zsh configuration | `reload!` |
 | `restart-audio` | Restart audio system (pipewire/pulseaudio) | `restart-audio` |
 
+### **🎯 YAML Parameter Runner (NEW v4.3)**
+| Command | Description | Usage Example |
+|---------|-------------|---------------|
+| `yaml-param-runner.py config.yaml --list` | **List available scripts in YAML config** | `./examples/yaml-param-runner.py config.yaml -l` |
+| `yaml-param-runner.py config.yaml --script NAME` | **Execute script with interactive parameters** | `./examples/yaml-param-runner.py config.yaml -s deploy` |
+| `yaml-param-runner.py --example` | **Create example YAML configuration** | `./examples/yaml-param-runner.py --example` |
+
 ### **📦 Cross-Platform Package Management**
 | Alias | Linux (APT) | macOS (Homebrew) | Description |
 |-------|-------------|------------------|-------------|
@@ -276,6 +283,7 @@ export GOSUMDB="company-sumdb"
 3. **`check-dependencies`** - Verify environment health
 4. **`config-backup`** - Manual backup before major changes
 5. **`tms`** - Quick tmux session switching
+6. **`yaml-param-runner.py config.yaml -s SCRIPT`** - Execute scripts with parameter validation
 
 ### **🛡️ Safety First**
 - Always use **`[t]`** (test) option for config changes
@@ -291,5 +299,5 @@ export GOSUMDB="company-sumdb"
 
 ---
 
-*Generated for Literate Configuration System v2.0*  
+*Generated for Literate Configuration System v4.3*  
 *For issues or improvements, edit the .org files and run the enhanced reload system*

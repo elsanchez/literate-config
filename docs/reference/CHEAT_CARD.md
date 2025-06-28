@@ -28,6 +28,7 @@
 │ check-dependencies     │ Check missing dependencies            │
 │ install-dependencies   │ Auto-install missing tools            │
 │ setup-literate-config  │ Complete environment setup            │
+│ yaml-param-runner.py   │ Execute scripts with YAML validation  │
 └─────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────┐
