@@ -759,13 +759,14 @@ doom-test-config() {
   echo "🧪 Testing Doom Emacs configuration in isolated environment..."
 
   local test_dir="$HOME/.doom-test"
-  local config_dir="~/org/literate-config"
+  local config_dir="$HOME/org/literate-config"
   local timestamp=$(date +"%Y%m%d_%H%M%S")
 
   # Create isolated test environment
   echo "📁 Creating test environment: $test_dir"
   rm -rf "$test_dir"
   mkdir -p "$test_dir"
+  mkdir -p "$test_dir/lisp"  # Create lisp subdirectory for tangling
 
   # Tangle configurations to test directory
   echo "🔧 Tangling configurations to test environment..."
@@ -834,7 +835,7 @@ doom-stage-config() {
   echo "🎭 Staging Doom Emacs configuration for testing..."
 
   local staging_dir="$HOME/.doom-staging"
-  local config_dir="~/org/literate-config"
+  local config_dir="$HOME/org/literate-config"
   local backup_dir="$HOME/.config/doom.backup.$(date +%Y%m%d_%H%M%S)"
 
   # Create staging directory

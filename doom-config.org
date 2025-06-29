@@ -269,11 +269,35 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 ;; change `org-directory'. It must be set before org loads!
 (setq org-directory "~/org/")
 
+;; OS Detection and Path Helper Functions
+;; These functions provide centralized OS detection and path management
+;; to avoid code duplication across multiple configuration functions.
+(defun elsanchez/is-macos-p ()
+  "Return t if running on macOS."
+  (eq system-type 'darwin))
+
+(defun elsanchez/get-doom-binary-path ()
+  "Get the correct doom binary path for the current OS.
+   macOS: ~/.emacs.d/bin/doom
+   Linux: ~/.config/emacs/bin/doom"
+  (if (elsanchez/is-macos-p)
+      (expand-file-name "~/.emacs.d/bin/doom")
+    (expand-file-name "~/.config/emacs/bin/doom")))
+
+;; Treemacs and Projectile Configuration
+(setq treemacs-position 'right)  ; Abre en el lado derecho
+
+(after! projectile
+    (add-hook 'projectile-after-switch-project-hook
+     (lambda ()
+       (treemacs-add-and-display-current-project-exclusively)
+       (other-window 1))))
+
 ;; Save buffer
 (global-set-key (kbd "M-s") #'save-buffer)
 
 ;; macOS cmd+s and cmd+S keybindings
-(when (eq system-type 'darwin)
+(when (elsanchez/is-macos-p)
   (map! "s-s" #'save-buffer      ; cmd+s for save
         "s-S" #'write-file))     ; cmd+S for save as
 
@@ -345,21 +369,86 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 ;; (map! "M-p" #'my/paste-from-android-clipboard)
 ;; (map! "M-y" #'my/copy-to-android-clipboard)
 
-(add-to-list 'load-path (expand-file-name "lisp" doom-user-dir))
-(require 'log-timestamps)
+;; Dynamic Lisp Directory Loading System
+(defvar elsanchez/lisp-ignore-list '()
+  "List of lisp files to ignore during automatic loading.
+   Example: '(\"temp-file.el\" \"debug-helper.el\")")
+
+(defvar elsanchez/lisp-force-load-list '()
+  "List of lisp files to force load even if they're in the ignore list.
+   Example: '(\"debug-helper.el\")")
+
+(defun elsanchez/load-lisp-directory (&optional directory)
+  "Dynamically load all .el files from lisp directory.
+   DIRECTORY defaults to doom-user-dir/lisp.
+   Respects ignore-list and force-load-list."
+  (let* ((lisp-dir (or directory (expand-file-name "lisp" doom-user-dir)))
+         (lisp-files (when (file-directory-p lisp-dir)
+                      (directory-files lisp-dir nil "\\.el$"))))
+    
+    (when lisp-files
+      ;; Add lisp directory to load-path
+      (add-to-list 'load-path lisp-dir)
+      
+      ;; Load each file
+      (dolist (file lisp-files)
+        (let* ((file-base (file-name-sans-extension file))
+               (should-ignore (member file elsanchez/lisp-ignore-list))
+               (force-load (member file elsanchez/lisp-force-load-list)))
+          
+          (cond
+           ;; Force load takes precedence
+           (force-load
+            (message "🔧 Force loading: %s" file)
+            (condition-case err
+                (require (intern file-base))
+              (error (message "❌ Failed to force load %s: %s" file (error-message-string err)))))
+           
+           ;; Skip if in ignore list
+           (should-ignore
+            (message "⏭️ Skipping ignored file: %s" file))
+           
+           ;; Normal loading
+           (t
+            (condition-case err
+                (progn
+                  (require (intern file-base))
+                  (message "✅ Loaded: %s" file))
+              (error (message "❌ Failed to load %s: %s" file (error-message-string err))))))))))
+
+;; Load lisp files dynamically
+(elsanchez/load-lisp-directory)
+
+;; Example usage (commented out):
+;; To ignore certain files:
+;; (setq elsanchez/lisp-ignore-list '("temp-debug.el" "experimental.el"))
+;;
+;; To force load a file even if it's ignored:
+;; (setq elsanchez/lisp-force-load-list '("temp-debug.el"))
+;;
+;; Then reload with:
+;; (elsanchez/load-lisp-directory)
+
+(defun elsanchez/reload-lisp-directory ()
+  "Reload all lisp files from the lisp directory.
+   Useful for development and testing."
+  (interactive)
+  (message "🔄 Reloading lisp directory...")
+  (elsanchez/load-lisp-directory))
+
+(defun elsanchez/show-lisp-status ()
+  "Show current status of lisp loading configuration."
+  (interactive)
+  (let ((lisp-dir (expand-file-name "lisp" doom-user-dir)))
+    (message "📋 Lisp Directory: %s\n📋 Ignore List: %s\n📋 Force Load List: %s" 
+             lisp-dir
+             (or elsanchez/lisp-ignore-list "None")
+             (or elsanchez/lisp-force-load-list "None"))))
 
 
 ;; Opcional: asegurar que se use Zsh como shell para sh-mode
 (after! sh-script
     (setq sh-shell "zsh"))
-
-(setq treemacs-position 'right)  ; Abre en el lado derecho
-
-(after! projectile
-    (add-hook 'projectile-after-switch-project-hook
-     (lambda ()
-       (treemacs-add-and-display-current-project-exclusively)
-       (other-window 1))))
 
 ;; Configuration management and validation functions
 (defun elsanchez/backup-configs ()
@@ -396,9 +485,7 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
   "Validate Doom Emacs configuration before applying."
   (interactive)
   (let ((doom-bin (or (executable-find "doom")
-                      (if (eq system-type 'darwin)
-                          (expand-file-name "~/.emacs.d/bin/doom")
-                        (expand-file-name "~/.config/emacs/bin/doom")))))
+                      (elsanchez/get-doom-binary-path))))
     (if (and doom-bin (file-executable-p doom-bin))
         (progn
           (message "🔍 Validating Doom configuration...")
@@ -587,9 +674,7 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
   "Enhanced config reload with testing options, backup, validation, and error handling."
   (interactive)
   (let* ((doom-bin (or (executable-find "doom")
-                       (if (eq system-type 'darwin)
-                           (expand-file-name "~/.emacs.d/bin/doom")
-                         (expand-file-name "~/.config/emacs/bin/doom"))))
+                       (elsanchez/get-doom-binary-path)))
          (config-dir "~/org/literate-config/"))
     
     (unless (and doom-bin (file-executable-p doom-bin))
@@ -635,9 +720,7 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
     "Direct config reload with backup, validation, and error handling."
     (interactive)
     (let* ((doom-bin (or (executable-find "doom")
-                         (if (eq system-type 'darwin)
-                             (expand-file-name "~/.emacs.d/bin/doom")
-                           (expand-file-name "~/.config/emacs/bin/doom"))))
+                         (elsanchez/get-doom-binary-path)))
            (config-dir "~/org/literate-config/"))
 
       (message "🚀 Starting direct config reload...")
@@ -690,6 +773,9 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
        :desc "Auto restart daemon" "a" #'elsanchez/auto-restart-daemon
        :desc "Restart daemon only" "d" #'elsanchez/restart-daemon-only
        :desc "Open new frame" "f" #'elsanchez/open-new-frame)
+      (:prefix ("r l" . "lisp directory")
+       :desc "Reload lisp directory" "r" #'elsanchez/reload-lisp-directory
+       :desc "Show lisp status" "s" #'elsanchez/show-lisp-status)
       (:prefix ("w" . "window")
        :desc "Window resize transient" "r" #'elsanchez/window-resize-transient))
 
@@ -767,22 +853,6 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
           (lambda ()
             (when (derived-mode-p 'org-mode)
               (my/org-babel-format-src-blocks))))
-
-;; Make Doom start in the dashboard when launching without files
-(setq doom-fallback-buffer-name "*doom*"
-      +doom-dashboard-name "*doom*"
-      +doom-dashboard-pwd-policy nil)
-
-;; Make sure Emacsclient opens a clean frame properly
-(setq server-client-instructions nil) ;; No annoying message when opening new emacsclient frames
-
-(setq treemacs-position 'right)  ; Abre en el lado derecho
-
-(after! projectile
-    (add-hook 'projectile-after-switch-project-hook
-     (lambda ()
-       (treemacs-add-and-display-current-project-exclusively)
-       (other-window 1))))
 
 (defun elsanchez/cleanup-workspaces-on-startup ()
   "Delete all extra workspaces if Emacs started without files."
@@ -903,7 +973,7 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
         (string-trim key)))))
 
 ;; Jira authentication functions (macOS only)
-(when (eq system-type 'darwin)
+(when (elsanchez/is-macos-p)
   (defun my/get-jira-credentials-from-keychain ()
     "Get Jira credentials from macOS Keychain."
     (when (executable-find "security")
@@ -949,7 +1019,7 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
   (message "✅ claudemacs configured with Secret Service integration"))
 
 ;; Jira Integration (macOS only)
-(when (eq system-type 'darwin)
+(when (elsanchez/is-macos-p)
   ;; Jira Integration
   (when-let ((jira-creds (my/get-jira-credentials-from-keychain)))
     (use-package! jiralib2
@@ -1044,14 +1114,6 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 **** Clean up workspaces on startup
 #+PROPERTY: header-args :results none
 #+BEGIN_SRC emacs-lisp :tangle ~/.config/doom/config.el
-(setq treemacs-position 'right)  ; Abre en el lado derecho
-
-(after! projectile
-    (add-hook 'projectile-after-switch-project-hook
-     (lambda ()
-       (treemacs-add-and-display-current-project-exclusively)
-       (other-window 1))))
-
 (defun elsanchez/cleanup-workspaces-on-startup ()
   "Delete all extra workspaces if Emacs started without files."
   (when (and (bound-and-true-p persp-mode)
