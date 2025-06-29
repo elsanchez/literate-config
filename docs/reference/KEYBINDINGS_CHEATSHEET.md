@@ -114,10 +114,6 @@
 | `reload!` | Reload zsh configuration | `reload!` |
 | `restart-audio` | Restart audio system (pipewire/pulseaudio) | `restart-audio` |
 
-### **🎯 YAML Parameter Runner (NEW v4.3)**
-| Command | Description | Usage Example |
-|---------|-------------|---------------|
-
 ### **📦 Cross-Platform Package Management**
 | Alias | Linux (APT) | macOS (Homebrew) | Description |
 |-------|-------------|------------------|-------------|
@@ -295,5 +291,5 @@ export GOSUMDB="company-sumdb"
 
 ---
 
-*Generated for Literate Configuration System v4.3*  
+*Generated for Literate Configuration System v4.4*  
 *For issues or improvements, edit the .org files and run the enhanced reload system*

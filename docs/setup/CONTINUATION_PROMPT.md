@@ -6,10 +6,12 @@
 
 Hola, tengo un proyecto de literate configuration para Doom Emacs y Zsh en `~/org/literate-config/`. 
 
-**Estado actual v4.3**: Sistema completamente funcional y listo para producción. **Jira integration** streamlined (Confluence removido), **enhanced macOS support**, **syntax errors fixed**, y **work environment** con credenciales seguras.
+**Estado actual v4.4**: Sistema completamente funcional y listo para producción. **Repositorio limpio** (ejemplos movidos a branch separado), **Tmux unificado** con detección dinámica de OS, **Jira integration** streamlined, **enhanced macOS support**, y **work environment** con credenciales seguras.
 
 **Estado actual**:
 
+✅ **Clean Repository**: Código de prueba de concepto en branch `proof-of-concept-examples`
+✅ **Unified Tmux**: Configuración única con detección dinámica de plataforma
 ✅ **Syntax Clean**: magit funcionando correctamente, sin invalid-read-syntax
 ✅ **Jira Only**: Integración simplificada sin Confluence
 ✅ **macOS Fixed**: cmd+s/cmd+S usando map! correctamente
@@ -20,10 +22,15 @@ Hola, tengo un proyecto de literate configuration para Doom Emacs y Zsh en `~/or
 - `docs/setup/CLAUDE.md` - Documentación del sistema  
 - `docs/reference/QUICK_REFERENCE.md` - Comandos esenciales
 
-**Características principales** (v4.3 Production):
+**Características principales** (v4.4 Clean Production):
 
 
-### **🔧 ACTUALIZACIONES v4.2**:
+### **🌟 ACTUALIZACIONES v4.4**:
+- **Clean Repository**: Ejemplos movidos a branch separado
+- **Unified Tmux**: Configuración dinámica cross-platform
+- **Documentation**: Actualizada para reflejar estado limpio
+
+### **🔧 MANTENIDAS v4.2**:
 - **Jira Streamlined**: `SPC j` prefix, solo Jira (Confluence removido)
 - **Syntax Fixed**: Todos los errores de invalid-read-syntax resueltos
 - **macOS Keybindings**: cmd+s/cmd+S usando map! (no más global-set-key)
@@ -46,7 +53,9 @@ Hola, tengo un proyecto de literate configuration para Doom Emacs y Zsh en `~/or
 - `check-dependencies` - Verificación de herramientas faltantes
 - Detección automática de OS y configuraciones apropiadas
 
-**Cambios importantes en v4.3**:
+**Cambios importantes en v4.4**:
+- 🌟 **v4.4**: Repository cleanup - ejemplos en branch separado
+- 🌟 **v4.4**: Tmux configuration unificada con detección de OS
 - 🔧 **v4.2**: Confluence integration removido (solo Jira)
 - 🔧 **v4.2**: Syntax errors completamente resueltos (magit funcionando)
 - 🔧 **v4.2**: macOS keybindings usando map! (Doom style)
@@ -94,10 +103,12 @@ install-dependencies           # Instalar herramientas faltantes (si hay)
 - Si faltan herramientas: ejecutar `install-dependencies`
 - Para rollback: usar `config-restore` o `doom-rollback`
 
-**Estado v4.3 - Sistema Funcional:**
-1. ✅ **All Working**: magit, syntax errors, keybindings resueltos
-2. ✅ **Jira Ready**: Integración simplificada sin Confluence
-3. ✅ **macOS Perfect**: cmd+s/cmd+S funcionando correctamente
-4. ✅ **Production**: Sistema listo para uso diario sin issues
+**Estado v4.4 - Sistema Limpio y Funcional:**
+1. ✅ **Clean Repo**: Configuración literate pura sin código de prueba
+2. ✅ **Unified Tmux**: Una sola configuración para todas las plataformas
+3. ✅ **All Working**: magit, syntax errors, keybindings resueltos
+4. ✅ **Jira Ready**: Integración simplificada sin Confluence
+5. ✅ **macOS Perfect**: cmd+s/cmd+S funcionando correctamente
+6. ✅ **Production**: Sistema listo para uso diario sin issues
 
 **Si necesitas hacer cambios**: `SPC r d` en Emacs para testing seguro
