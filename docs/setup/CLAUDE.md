@@ -217,10 +217,11 @@ setup-literate-config  # This will install dependencies and setup everything
   - **File Managers**: Native `open` (macOS) vs `xdg-open` (Linux)
   - **Daemon Management**: systemd with manual fallbacks
   - Oh My Zsh, powerlevel10k, and essential utilities
-- **tmux-config.org**: Cross-platform tmux configuration with oh-my-tmux integration
-  - Linux: `~/.config/tmux/tmux.conf.local` with xclip clipboard integration
-  - macOS: `~/.tmux.conf.local` with pbcopy clipboard integration
-  - Platform-specific paths for plugins and status scripts
+- **tmux-config.org**: Unified cross-platform tmux configuration with oh-my-tmux integration
+  - Dynamic path resolution based on OS detection
+  - Automatic clipboard integration (xclip on Linux, pbcopy on macOS)
+  - Platform-specific plugin paths and status scripts
+  - Single configuration source that adapts to the platform
 - **scripts.org**: Utility scripts like `focus_or_launch.sh` for window management
 - **examples/yaml-param-runner.py**: Advanced script runner with YAML configuration and parameter validation
 

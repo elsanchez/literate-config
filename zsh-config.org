@@ -1360,4 +1360,3 @@ alias yt='download_video'
 source ~/.zshrc
 #+end_src
 
-Happy hacking! 🚀
