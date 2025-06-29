@@ -6,12 +6,10 @@
 
 Hola, tengo un proyecto de literate configuration para Doom Emacs y Zsh en `~/org/literate-config/`. 
 
-**Estado actual v4.3**: Sistema completamente funcional y listo para producción. **YAML Parameter Runner** implementado, **Jira integration** streamlined (Confluence removido), **enhanced macOS support**, **syntax errors fixed**, y **work environment** con credenciales seguras. La configuración v4.3 incluye advanced script execution con parameter validation.
+**Estado actual v4.3**: Sistema completamente funcional y listo para producción. **Jira integration** streamlined (Confluence removido), **enhanced macOS support**, **syntax errors fixed**, y **work environment** con credenciales seguras.
 
 **Estado actual**:
 
-✅ **COMPLETADO v4.3**: YAML Parameter Runner con validación completa implementado
-✅ **Enhanced Examples**: Directorio examples con textual demo y parameter-based execution
 ✅ **Syntax Clean**: magit funcionando correctamente, sin invalid-read-syntax
 ✅ **Jira Only**: Integración simplificada sin Confluence
 ✅ **macOS Fixed**: cmd+s/cmd+S usando map! correctamente
@@ -24,12 +22,6 @@ Hola, tengo un proyecto de literate configuration para Doom Emacs y Zsh en `~/or
 
 **Características principales** (v4.3 Production):
 
-### **🚀 NUEVAS FUNCIONES v4.3**:
-- **YAML Parameter Runner**: `examples/yaml-param-runner.py` - script execution con parameter validation
-- **Parameter Validation**: text, number, select, boolean con comprehensive validation
-- **YAML Configuration**: Complete configuration support con examples y validation rules
-- **Interactive Parameter Collection**: Defaults, choices, patterns, min/max values
-- **Enhanced Examples**: Integración con textual demo y parameter-based execution
 
 ### **🔧 ACTUALIZACIONES v4.2**:
 - **Jira Streamlined**: `SPC j` prefix, solo Jira (Confluence removido)
@@ -55,8 +47,6 @@ Hola, tengo un proyecto de literate configuration para Doom Emacs y Zsh en `~/or
 - Detección automática de OS y configuraciones apropiadas
 
 **Cambios importantes en v4.3**:
-- 🚀 **v4.3**: YAML Parameter Runner con comprehensive validation implementado
-- 🚀 **v4.3**: Enhanced examples directory con textual integration
 - 🔧 **v4.2**: Confluence integration removido (solo Jira)
 - 🔧 **v4.2**: Syntax errors completamente resueltos (magit funcionando)
 - 🔧 **v4.2**: macOS keybindings usando map! (Doom style)
@@ -105,11 +95,9 @@ install-dependencies           # Instalar herramientas faltantes (si hay)
 - Para rollback: usar `config-restore` o `doom-rollback`
 
 **Estado v4.3 - Sistema Funcional:**
-1. ✅ **YAML Runner**: Advanced script execution con parameter validation
-2. ✅ **Enhanced Examples**: Examples directory con textual integration
-3. ✅ **All Working**: magit, syntax errors, keybindings resueltos
-4. ✅ **Jira Ready**: Integración simplificada sin Confluence
-5. ✅ **macOS Perfect**: cmd+s/cmd+S funcionando correctamente
-6. ✅ **Production**: Sistema listo para uso diario sin issues
+1. ✅ **All Working**: magit, syntax errors, keybindings resueltos
+2. ✅ **Jira Ready**: Integración simplificada sin Confluence
+3. ✅ **macOS Perfect**: cmd+s/cmd+S funcionando correctamente
+4. ✅ **Production**: Sistema listo para uso diario sin issues
 
 **Si necesitas hacer cambios**: `SPC r d` en Emacs para testing seguro

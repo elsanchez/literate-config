@@ -16,7 +16,6 @@ doom-test-config     # Test before deploy
 emacs-restart        # Smart daemon restart
 check-dependencies   # Verify environment
 config-backup        # Manual backup
-yaml-param-runner.py config.yaml -s SCRIPT  # Execute scripts with validation
 ```
 
 ### **Emergency Recovery**
