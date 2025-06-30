@@ -714,9 +714,9 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
         ((eq choice ?c)
          (message "❌ Reload cancelled."))
 
-        (t (message "❌ Invalid choice.")))))
+        (t (message "❌ Invalid choice."))))))
 
-  (defun elsanchez/doom-reload-direct ()
+(defun elsanchez/doom-reload-direct ()
     "Direct config reload with backup, validation, and error handling."
     (interactive)
     (let* ((doom-bin (or (executable-find "doom")
@@ -1112,7 +1112,6 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 
 
 **** Clean up workspaces on startup
-#+PROPERTY: header-args :results none
 #+BEGIN_SRC emacs-lisp :tangle ~/.config/doom/config.el
 (defun elsanchez/cleanup-workspaces-on-startup ()
   "Delete all extra workspaces if Emacs started without files."
@@ -1123,7 +1122,6 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 
 (add-hook 'emacs-startup-hook #'elsanchez/cleanup-workspaces-on-startup)
 #+END_SRC
-
 
 ** packages.el
 #+PROPERTY: header-args :results none
