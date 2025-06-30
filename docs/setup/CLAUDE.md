@@ -267,9 +267,46 @@ If configuration deployment fails:
 3. Use `config-list-backups` and `config-restore` to rollback
 4. Validation functions help identify issues before deployment
 
+## 🚨 MANDATORY Testing Protocol
+
+### CRITICAL: Validation BEFORE Any Changes
+
+**⚠️ WARNING**: The following testing protocol is MANDATORY to prevent introducing syntax errors or breaking configurations. This protocol was established after a critical incident where changes were made without proper validation.
+
+#### Pre-Change Validation (REQUIRED)
+```bash
+# 1. ALWAYS run isolated test FIRST
+doom-test-config
+
+# 2. Verify current configuration syntax
+emacs --batch --eval "(progn (find-file \"doom-config.org\") (check-parens))"
+
+# 3. Ensure doom sync works
+doom sync
+
+# If ANY of these fail, DO NOT PROCEED with changes
+```
+
+#### Post-Change Validation (REQUIRED)
+```bash
+# 1. Re-run isolated test
+doom-test-config
+
+# 2. Validate generated files
+emacs --batch --eval "(progn (find-file \"~/.config/doom/config.el\") (check-parens))"
+
+# 3. Stage for testing
+doom-stage-config
+
+# 4. Only after ALL tests pass, apply to production
+```
+
+### Critical Lesson Learned
+**Never introduce changes without validation**. A previous incident occurred where nested function definitions were introduced without testing, causing complete configuration failure. See `docs/setup/LESSONS_LEARNED.md` for details.
+
 ## Development Workflow
 
-### Safe Testing Approach (Recommended)
+### Safe Testing Approach (Mandatory)
 1. Edit `.org` files directly (not the generated configs)
 2. Test changes safely:
    - **Option A**: `SPC r d` → `[t]` - Test in isolated environment first
