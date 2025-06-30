@@ -448,6 +448,70 @@ config-list-backups
 config-restore
 ```
 
+## 🚨 Common Errors and Solutions
+
+### End-of-File Errors in config.el
+
+**Error**: `Debugger entered--Lisp error: (doom-user-error "doom/config.el" (end-of-file "/home/user/.config/doom/config.el"))`
+
+**Common Causes**:
+- **Nested functions**: Functions defined inside other functions (incorrect Emacs Lisp syntax)
+- **Unbalanced parentheses**: Missing or extra closing parentheses
+- **Syntax errors**: Malformed s-expressions
+
+**Solution Pattern**:
+```elisp
+;; ❌ INCORRECT: Nested function definition
+(defun outer-function ()
+  "Documentation"
+  (interactive)
+  ;; ... function body ...
+  
+  (defun inner-function ()  ; ← This is WRONG
+    "This will cause end-of-file errors"
+    ;; ... body ...))
+
+;; ✅ CORRECT: Independent function definitions
+(defun outer-function ()
+  "Documentation"
+  (interactive)
+  ;; ... function body ...
+  )  ; ← Properly closed
+
+(defun inner-function ()  ; ← Separate function
+  "This is correct"
+  ;; ... body ...
+  )  ; ← Properly closed
+```
+
+**Debugging Steps**:
+1. Check for nested `defun` statements
+2. Verify parentheses balance: `M-x check-parens` in Emacs
+3. Use `make tangle` to regenerate config.el
+4. Test syntax: `emacs --batch -l ~/.config/doom/config.el`
+
+**Prevention**:
+- Keep all function definitions at top level
+- Use proper indentation to visualize nesting
+- Regularly validate syntax during development
+
+### Function Loading Issues
+
+**Error**: Functions defined in `zsh-config.org` not available in shell
+
+**Solution**: Functions need to be tangled and shell reloaded
+```bash
+make && source ~/.zshrc
+# OR restart terminal
+```
+
+**Error**: Doom functions not working after configuration changes
+
+**Solution**: Use the built-in reload system
+```
+SPC r d  # In Emacs: Interactive reload with testing options
+```
+
 ## 📚 Reference Documentation
 
 This repository includes comprehensive reference materials:
