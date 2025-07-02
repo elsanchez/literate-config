@@ -1111,17 +1111,6 @@ This is a literate configuration combining your `init.el`, `config.el`, `package
 #+END_SRC
 
 
-**** Clean up workspaces on startup
-#+BEGIN_SRC emacs-lisp :tangle ~/.config/doom/config.el
-(defun elsanchez/cleanup-workspaces-on-startup ()
-  "Delete all extra workspaces if Emacs started without files."
-  (when (and (bound-and-true-p persp-mode)
-             (= (length (persp-names)) 1) ;; Only *scratch* or *doom*
-             (get-buffer "*doom*"))
-    (+workspace/delete-other)))
-
-(add-hook 'emacs-startup-hook #'elsanchez/cleanup-workspaces-on-startup)
-#+END_SRC
 
 ** packages.el
 #+PROPERTY: header-args :results none
